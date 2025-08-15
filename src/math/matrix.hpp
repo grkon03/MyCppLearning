@@ -72,11 +72,11 @@ namespace MCL::math
 
         matrix<T> strassen(matrix<T>) const;
 
-        const matrix<T> &operator+=(matrix<T>) const;
-        const matrix<T> &operator+=(T) const;
-        const matrix<T> &operator-=(matrix<T>) const;
-        const matrix<T> &operator-=(T) const;
-        const matrix<T> &operator*=(T) const;
+        const matrix<T> &operator+=(matrix<T>);
+        const matrix<T> &operator+=(T);
+        const matrix<T> &operator-=(matrix<T>);
+        const matrix<T> &operator-=(T);
+        const matrix<T> &operator*=(T);
 
         matrix<T> transpose() const;
 
@@ -450,6 +450,54 @@ namespace MCL::math
     }
 
     template <arith T>
+    const matrix<T> &matrix<T>::operator+=(T t)
+    {
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            this->elements[i] += t;
+        }
+
+        return *this;
+    }
+
+    template <arith T>
+    const matrix<T> &matrix<T>::operator+=(matrix<T> mat)
+    {
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            this->elements[i] += mat.elements[i];
+        }
+
+        return *this;
+    }
+
+    template <arith T>
+    const matrix<T> &matrix<T>::operator-=(matrix<T> mat)
+    {
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            this->elements[i] -= mat.elements[i];
+        }
+
+        return *this;
+    }
+
+    template <arith T>
+    const matrix<T> &matrix<T>::operator-=(T t)
+    {
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            this->elements[i] -= t;
+        }
+
+        return *this;
+    }
+
+    template <arith T>
     matrix<T> matrix<T>::transpose() const
     {
         matrix<T> ret(C, R);
@@ -562,6 +610,8 @@ namespace MCL::math
         return ret;
     }
 
+    // other operators
+
     template <arith T>
     std::ostream &operator<<(std::ostream &os, const matrix<T> &mat)
     {
@@ -575,6 +625,24 @@ namespace MCL::math
             os << std::endl;
         }
         return os;
+    }
+
+    template <arith T>
+    matrix<T> operator+(T t, matrix<T> mat)
+    {
+        return mat + t;
+    }
+
+    template <arith T>
+    matrix<T> operator-(T t, matrix<T> mat)
+    {
+        return mat - t;
+    }
+
+    template <arith T>
+    matrix<T> operator*(T t, matrix<T> mat)
+    {
+        return mat * t;
     }
 
     using Rmatrix = matrix<Real>;
