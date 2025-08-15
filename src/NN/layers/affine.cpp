@@ -48,7 +48,7 @@ namespace MCL::NN
         return refs;
     }
 
-    std::vector<math::Rmatrix> AffineLayer::getGradients()
+    std::vector<math::Rmatrix> AffineLayer::getGradients() const
     {
         std::vector<math::Rmatrix> grads;
 

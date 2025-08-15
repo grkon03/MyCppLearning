@@ -16,6 +16,6 @@ namespace MCL::NN
         // learn
 
         virtual std::vector<math::Rmatrix *> getParamaterRefs() = 0;
-        virtual std::vector<math::Rmatrix> getGradients() = 0;
+        virtual std::vector<math::Rmatrix> getGradients() const = 0;
     };
 }

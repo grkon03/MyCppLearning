@@ -32,6 +32,6 @@ namespace MCL::NN
         math::Rmatrix backward(math::Rmatrix) override;
 
         std::vector<math::Rmatrix *> getParamaterRefs() override;
-        std::vector<math::Rmatrix> getGradients() override;
+        std::vector<math::Rmatrix> getGradients() const override;
     };
 }

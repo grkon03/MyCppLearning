@@ -41,7 +41,7 @@ namespace MCL::NN
         return std::vector<math::Rmatrix *>();
     }
 
-    std::vector<math::Rmatrix> ReLULayer::getGradients()
+    std::vector<math::Rmatrix> ReLULayer::getGradients() const
     {
         return std::vector<math::Rmatrix>();
     }
