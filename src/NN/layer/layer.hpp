@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include "../math/math.hpp"
+#include "../../math/math.hpp"
 
 namespace MCL::NN
 {
