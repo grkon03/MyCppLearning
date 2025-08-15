@@ -39,6 +39,8 @@ namespace MCL::math
         matrix(size_t, size_t, std::initializer_list<T>);
         matrix(const matrix<T> &);
 
+        explicit matrix(T);
+
         // basic methods
 
         T &at(size_t, size_t);
@@ -66,6 +68,7 @@ namespace MCL::math
         matrix<T> operator-(T) const;
         matrix<T> operator*(matrix<T>) const;
         matrix<T> operator*(T) const;
+        matrix<T> operator/(T) const;
 
         matrix<T> strassen(matrix<T>) const;
 
@@ -91,7 +94,9 @@ namespace MCL::math
 
         // arithmetical
 
-        matrix<T> hadamard(matrix<T>);
+        T sum() const;
+        T max() const;
+        matrix<T> hadamardProd(matrix<T>) const;
     };
 
     template <arith T>
@@ -214,6 +219,9 @@ namespace MCL::math
             this->elements[i] = mat.elements[i];
         }
     }
+
+    template <arith T>
+    matrix<T>::matrix(T t) : matrix(1, 1, t) {}
 
     template <arith T>
     T &matrix<T>::at(size_t i, size_t j)
@@ -393,6 +401,19 @@ namespace MCL::math
     }
 
     template <arith T>
+    matrix<T> matrix<T>::operator/(T t) const
+    {
+        matrix<T> ret(R, C);
+        size_t i = 0;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] /= t;
+        }
+
+        return ret;
+    }
+
+    template <arith T>
     matrix<T> matrix<T>::strassen(matrix<T> mat) const
     {
         matrix<T> A = this->padding(0, R % 2, 0, C % 2);
@@ -492,6 +513,53 @@ namespace MCL::math
     bool matrix<T>::isSameShape(matrix<T> mat) const
     {
         return (R == mat.R && C == mat.C);
+    }
+
+    template <arith T>
+    T matrix<T>::sum() const
+    {
+        T _sum = 0;
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            _sum += this->elements[i];
+        }
+
+        return 0;
+    }
+
+    template <arith T>
+    T matrix<T>::max() const
+    {
+        static_assert(std::totally_ordered<T>, "max() can be used only in the case that T is totally ordered");
+
+        T _max = std::numeric_limits<int>::min();
+
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            if (_max < this->elements[i])
+            {
+                _max = this->elements[i];
+            }
+        }
+
+        return _max;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::hadamardProd(matrix<T> mat) const
+    {
+        assert(R == mat.R && C == mat.C);
+
+        matrix<T> ret(R, C);
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = this->elements[i] * mat.elements[i];
+        }
+
+        return ret;
     }
 
     template <arith T>
