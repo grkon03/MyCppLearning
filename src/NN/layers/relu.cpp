@@ -36,7 +36,7 @@ namespace MCL::NN
         return gradOutput.map<math::Real>(fn);
     }
 
-    std::vector<math::Rmatrix *> ReLULayer::getParamaterRefs()
+    std::vector<math::Rmatrix *> ReLULayer::getParameterRefs()
     {
         return std::vector<math::Rmatrix *>();
     }

@@ -41,11 +41,14 @@ namespace MCL::math
 
         explicit matrix(T);
 
+        ~matrix();
+
         // basic methods
 
         T &at(size_t, size_t);
         const T &at(size_t, size_t) const;
 
+        T &direct(size_t);
         const T &direct(size_t) const;
 
         size_t noRows() const;
@@ -60,7 +63,11 @@ namespace MCL::math
         bool isHVector() const;            // is a horizontal vector
         bool isHVector(size_t size) const; // is a horizontal vector
 
+        matrix<T> reshape(size_t rows, size_t cols) const;
+
         // operations
+
+        matrix<T> operator-() const;
 
         matrix<T> operator+(matrix<T>) const;
         matrix<T> operator+(T) const;
@@ -77,6 +84,8 @@ namespace MCL::math
         const matrix<T> &operator-=(matrix<T>);
         const matrix<T> &operator-=(T);
         const matrix<T> &operator*=(T);
+
+        matrix<T> &operator=(const matrix<T> &mat);
 
         matrix<T> transpose() const;
 
@@ -109,7 +118,7 @@ namespace MCL::math
     template <arith T>
     matrix<T>::matrix(size_t noRows, size_t noColumns, T init) : matrix(noRows, noColumns)
     {
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             this->elements[i] = init;
         }
@@ -129,7 +138,7 @@ namespace MCL::math
 
         this->elements = new T[RC];
 
-        int i, j;
+        size_t i, j;
 
         i = 0;
         for (const std::initializer_list<T> &row : elems)
@@ -150,7 +159,7 @@ namespace MCL::math
     {
         assert(elems.size() == noRows * noColumns);
         T *elemsarr = elems.begin();
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             this->elements[i] = elemsarr[i];
         }
@@ -214,7 +223,7 @@ namespace MCL::math
     template <arith T>
     matrix<T>::matrix(const matrix<T> &mat) : matrix(mat.R, mat.C)
     {
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             this->elements[i] = mat.elements[i];
         }
@@ -222,6 +231,13 @@ namespace MCL::math
 
     template <arith T>
     matrix<T>::matrix(T t) : matrix(1, 1, t) {}
+
+    template <arith T>
+    matrix<T>::~matrix()
+    {
+        delete[] elements;
+        elements = nullptr;
+    }
 
     template <arith T>
     T &matrix<T>::at(size_t i, size_t j)
@@ -234,6 +250,9 @@ namespace MCL::math
     {
         return this->elements[i * C + j];
     }
+
+    template <arith T>
+    T &matrix<T>::direct(size_t i) { return this->elements[i]; }
 
     template <arith T>
     const T &matrix<T>::direct(size_t i) const { return this->elements[i]; }
@@ -335,11 +354,38 @@ namespace MCL::math
     }
 
     template <arith T>
+    matrix<T> matrix<T>::reshape(size_t rows, size_t cols) const
+    {
+        assert(rows * cols == RC);
+        matrix<T> ret(rows, cols);
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = this->elements[i];
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::operator-() const
+    {
+        matrix<T> ret(R, C);
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = -this->elements[i];
+        }
+
+        return ret;
+    }
+
+    template <arith T>
     matrix<T> matrix<T>::operator+(matrix<T> mat) const
     {
         assert(R == mat.R && C == mat.C);
         matrix<T> ret(R, C);
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             ret.elements[i] = this->elements[i] + mat.elements[i];
         }
@@ -350,7 +396,7 @@ namespace MCL::math
     matrix<T> matrix<T>::operator+(T a) const
     {
         matrix<T> ret(R, C);
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             ret.elements[i] = this->elements[i] + a;
         }
@@ -363,7 +409,7 @@ namespace MCL::math
         assert(R == mat.R && C == mat.C);
         matrix<T> ret(R, C);
 
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             ret.elements[i] = this->elements[i] - mat.elements[i];
         }
@@ -375,7 +421,7 @@ namespace MCL::math
     matrix<T> matrix<T>::operator-(T a) const
     {
         matrix<T> ret(R, C);
-        for (int i = 0; i < RC; ++i)
+        for (size_t i = 0; i < RC; ++i)
         {
             ret.elements[i] = this->elements[i] - a;
         }
@@ -401,13 +447,26 @@ namespace MCL::math
     }
 
     template <arith T>
+    matrix<T> matrix<T>::operator*(T t) const
+    {
+        matrix<T> ret(R, C);
+        size_t i = 0;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = this->elements[i] * t;
+        }
+
+        return ret;
+    }
+
+    template <arith T>
     matrix<T> matrix<T>::operator/(T t) const
     {
         matrix<T> ret(R, C);
         size_t i = 0;
         for (i = 0; i < RC; ++i)
         {
-            ret.elements[i] /= t;
+            ret.elements[i] = this->elements[i] / t;
         }
 
         return ret;
@@ -498,6 +557,25 @@ namespace MCL::math
     }
 
     template <arith T>
+    matrix<T> &matrix<T>::operator=(const matrix<T> &mat)
+    {
+        if (RC > 0)
+            delete[] elements;
+        size_t i;
+        R = mat.R;
+        C = mat.C;
+        RC = mat.RC;
+        elements = new T[RC];
+
+        for (i = 0; i < RC; ++i)
+        {
+            this->elements[i] = mat.elements[i];
+        }
+
+        return *this;
+    }
+
+    template <arith T>
     matrix<T> matrix<T>::transpose() const
     {
         matrix<T> ret(C, R);
@@ -566,14 +644,28 @@ namespace MCL::math
     template <arith T>
     T matrix<T>::sum() const
     {
-        T _sum = 0;
-        size_t i;
-        for (i = 0; i < RC; ++i)
+        if constexpr (std::is_floating_point_v<T>)
         {
-            _sum += this->elements[i];
+            T sum = 0;
+            T c = 0;
+            for (size_t i = 0; i < RC; ++i)
+            {
+                T y = elements[i] - c;
+                T t = sum + y;
+                c = (t - sum) - y;
+                sum = t;
+            }
+            return sum;
         }
-
-        return 0;
+        else
+        {
+            T sum = 0;
+            for (size_t i = 0; i < RC; ++i)
+            {
+                sum += elements[i];
+            }
+            return sum;
+        }
     }
 
     template <arith T>
@@ -581,10 +673,12 @@ namespace MCL::math
     {
         static_assert(std::totally_ordered<T>, "max() can be used only in the case that T is totally ordered");
 
-        T _max = std::numeric_limits<int>::min();
+        assert(RC > 0);
+
+        T _max = this->elements[0];
 
         size_t i;
-        for (i = 0; i < RC; ++i)
+        for (i = 1; i < RC; ++i)
         {
             if (_max < this->elements[i])
             {
@@ -636,7 +730,7 @@ namespace MCL::math
     template <arith T>
     matrix<T> operator-(T t, matrix<T> mat)
     {
-        return mat - t;
+        return -(mat - t);
     }
 
     template <arith T>

@@ -2,12 +2,12 @@
 
 namespace MCL::NN
 {
-    size_t LastLayer::outputSize() const
+    math::Rmatrix LastLayer::backward(math::Rmatrix)
     {
-        return 1;
+        assert(false); // don't use any pure backward methods of LastLayer
     }
 
-    std::vector<math::Rmatrix *> LastLayer::getParamaterRefs()
+    std::vector<math::Rmatrix *> LastLayer::getParameterRefs()
     {
         return std::vector<math::Rmatrix *>();
     }
@@ -15,10 +15,5 @@ namespace MCL::NN
     std::vector<math::Rmatrix> LastLayer::getGradients() const
     {
         return std::vector<math::Rmatrix>();
-    }
-
-    void LastLayer::setCorrectAnswer(math::Rmatrix correctAnswer)
-    {
-        this->correctAnswer = correctAnswer;
     }
 }

@@ -22,20 +22,19 @@ namespace MCL::NN
         }
     }
 
-    SoftmaxLastLayer::SoftmaxLastLayer(size_t inputsize) : inputsize(inputsize) {}
+    SoftmaxLastLayer::SoftmaxLastLayer(size_t size) : size(size) {}
 
-    size_t SoftmaxLastLayer::inputSize() const { return inputsize; }
+    size_t SoftmaxLastLayer::inputSize() const { return size; }
+    size_t SoftmaxLastLayer::outputSize() const { return size; }
 
     math::Rmatrix SoftmaxLastLayer::forward(math::Rmatrix input)
     {
-        _prediction = softmax(input);
-        return math::Rmatrix(_loss = crossentropy(input, correctAnswer));
+        return _prediction = softmax(input);
     }
 
-    math::Rmatrix SoftmaxLastLayer::backward(math::Rmatrix outputGrad)
+    math::Rmatrix SoftmaxLastLayer::backwardWithCorrectAnswer(math::Rmatrix correctAnswer)
     {
-        assert(outputGrad.isVVector(1));
-
+        _loss = crossentropy(_prediction, correctAnswer);
         return _prediction - correctAnswer;
     }
 

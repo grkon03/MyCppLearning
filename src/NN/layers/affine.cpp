@@ -38,7 +38,7 @@ namespace MCL::NN
         return weight.transpose() * gradOutput;
     }
 
-    std::vector<math::Rmatrix *> AffineLayer::getParamaterRefs()
+    std::vector<math::Rmatrix *> AffineLayer::getParameterRefs()
     {
         std::vector<math::Rmatrix *> refs;
 

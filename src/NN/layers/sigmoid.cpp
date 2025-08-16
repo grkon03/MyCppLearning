@@ -30,7 +30,7 @@ namespace MCL::NN
                                           { return x * lastoutput.direct(i) * lastoutput.direct(i) * std::exp(-lastinput.direct(i)); });
     }
 
-    std::vector<math::Rmatrix *> SigmoidLayer::getParamaterRefs()
+    std::vector<math::Rmatrix *> SigmoidLayer::getParameterRefs()
     {
         return std::vector<math::Rmatrix *>();
     }

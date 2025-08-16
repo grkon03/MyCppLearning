@@ -13,7 +13,7 @@ namespace MCL::NN
 
         for (auto layer : layers)
         {
-            paramrefs = layer->getParamaterRefs();
+            paramrefs = layer->getParameterRefs();
             grads = layer->getGradients();
 
             assert(paramrefs.size() == grads.size());

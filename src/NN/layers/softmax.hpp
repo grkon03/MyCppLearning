@@ -11,7 +11,7 @@ namespace MCL::NN
     class SoftmaxLastLayer : public LastLayer
     {
     private:
-        size_t inputsize;
+        size_t size;
 
         // data
 
@@ -21,13 +21,14 @@ namespace MCL::NN
     public:
         // constructors
 
-        SoftmaxLastLayer(size_t inutsize);
+        SoftmaxLastLayer(size_t size);
 
         // basic methods
 
         size_t inputSize() const override;
+        size_t outputSize() const override;
         math::Rmatrix forward(math::Rmatrix) override;
-        math::Rmatrix backward(math::Rmatrix) override;
+        math::Rmatrix backwardWithCorrectAnswer(math::Rmatrix) override;
 
         // last layer methods
 
