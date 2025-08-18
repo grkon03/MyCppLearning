@@ -57,6 +57,23 @@ namespace MCL::NN
         return lastlayer != nullptr && layers.size() != 0;
     }
 
+    NeuralNetwork *NeuralNetwork::copy() const
+    {
+        std::vector<Layer *> copiedlayers;
+        size_t i;
+        for (i = 0; i < noLayers; ++i)
+        {
+            copiedlayers.push_back(layers[i]->copy());
+        }
+
+        return new NeuralNetwork(copiedlayers, lastlayer->copy());
+    }
+
+    math::Real NeuralNetwork::loss() const
+    {
+        return lastlayer->loss();
+    }
+
     math::Rmatrix NeuralNetwork::predict(math::Rmatrix firstinput)
     {
         assert(isPrepared());
@@ -77,7 +94,7 @@ namespace MCL::NN
     void NeuralNetwork::learn(LearningEngine *engine, math::Rmatrix correctAnswer)
     {
         size_t i = 0;
-        math::Rmatrix gradOutput = lastlayer->backwardWithCorrectAnswer(correctAnswer);
+        math::Rmatrix gradOutput = lastlayer->backwardByComparing(correctAnswer);
 
         for (i = 1; i <= noLayers; ++i)
         {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <tuple>
 #include <blas.hh>
 #include <iostream>
 #include <cassert>
@@ -105,6 +106,7 @@ namespace MCL::math
 
         T sum() const;
         T max() const;
+        std::pair<size_t, size_t> argmax() const;
         matrix<T> hadamardProd(matrix<T>) const;
     };
 
@@ -687,6 +689,27 @@ namespace MCL::math
         }
 
         return _max;
+    }
+
+    template <arith T>
+    std::pair<size_t, size_t> matrix<T>::argmax() const
+    {
+        static_assert(std::totally_ordered<T>, "argmax() can be used only in the case that T is totally ordered");
+
+        assert(RC > 0);
+
+        T _max = this->elements[0];
+        size_t i, i_max = 0;
+        for (i = 0; i < RC; ++i)
+        {
+            if (_max < this->elements[i])
+            {
+                _max = this->elements[i];
+                i_max = i;
+            }
+        }
+
+        return {i / C, i % C};
     }
 
     template <arith T>

@@ -13,6 +13,8 @@ namespace MCL::NN
         virtual math::Rmatrix forward(math::Rmatrix) = 0;  // data should be vertical vectors
         virtual math::Rmatrix backward(math::Rmatrix) = 0; // data should be vertical vectors
 
+        virtual Layer *copy() const = 0;
+
         // learn
 
         virtual std::vector<math::Rmatrix *> getParameterRefs() = 0;

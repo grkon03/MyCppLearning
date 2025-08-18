@@ -1,0 +1,32 @@
+#pragma once
+
+#include "../../math/math.hpp"
+#include "../basic/basic.hpp"
+
+namespace MCL::RL
+{
+    template <typename StateType, typename ActionType>
+    class Agent
+    {
+    public:
+        using Action = Action<ActionType>;
+        using State = State<StateType>;
+        virtual Action *getAction(State *) const = 0;
+        virtual math::Real update(State *state, Action *action, math::Real reward, State *nextState, bool done) = 0;
+        virtual Agent<StateType, ActionType> *copy() const = 0;
+    };
+
+    class VectorAgent : public Agent<VectorState::StateType, VectorAction::ActionType>
+    {
+    protected:
+        size_t statesize;
+        size_t actionsize;
+
+    public:
+        VectorAgent();
+        VectorAgent(size_t statesize, size_t actionsize);
+
+        virtual void setStateSize(size_t);
+        virtual void setActionSize(size_t);
+    };
+}

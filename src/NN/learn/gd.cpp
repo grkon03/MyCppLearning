@@ -26,4 +26,9 @@ namespace MCL::NN
             }
         }
     }
+
+    GradientDescentEngine *GradientDescentEngine::copy() const
+    {
+        return new GradientDescentEngine(rate);
+    }
 }

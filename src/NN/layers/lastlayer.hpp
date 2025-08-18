@@ -7,10 +7,18 @@ namespace MCL::NN
     class LastLayer : public Layer
     {
     public:
+        virtual LastLayer *copy() const override = 0;
+
         // backward
 
         math::Rmatrix backward(math::Rmatrix) override final; // don't use pure backward method
-        virtual math::Rmatrix backwardWithCorrectAnswer(math::Rmatrix) = 0;
+        /**
+         * @brief "compared" is a target value to be estimated:
+         * e.g.) for supervised learning, "compared" should be the correct answers
+         *
+         * @return math::Rmatrix
+         */
+        virtual math::Rmatrix backwardByComparing(math::Rmatrix compared) = 0;
 
         // fixed basic methods
 

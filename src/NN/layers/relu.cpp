@@ -45,4 +45,9 @@ namespace MCL::NN
     {
         return std::vector<math::Rmatrix>();
     }
+
+    ReLULayer *ReLULayer::copy() const
+    {
+        return new ReLULayer(size);
+    }
 }

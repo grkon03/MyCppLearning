@@ -14,6 +14,7 @@ namespace MCL::NN
 
         // basic methods
 
-        void run(std::vector<Layer *> layers);
+        void run(std::vector<Layer *> layers) override;
+        GradientDescentEngine *copy() const override;
     };
 }

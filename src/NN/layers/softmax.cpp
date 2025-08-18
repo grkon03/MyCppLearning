@@ -32,10 +32,15 @@ namespace MCL::NN
         return _prediction = softmax(input);
     }
 
-    math::Rmatrix SoftmaxLastLayer::backwardWithCorrectAnswer(math::Rmatrix correctAnswer)
+    math::Rmatrix SoftmaxLastLayer::backwardByComparing(math::Rmatrix compared)
     {
-        _loss = crossentropy(_prediction, correctAnswer);
-        return _prediction - correctAnswer;
+        _loss = crossentropy(_prediction, compared);
+        return _prediction - compared;
+    }
+
+    SoftmaxLastLayer *SoftmaxLastLayer::copy() const
+    {
+        return new SoftmaxLastLayer(size);
     }
 
     math::Rmatrix SoftmaxLastLayer::prediction() const { return _prediction; }

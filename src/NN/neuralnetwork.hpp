@@ -29,9 +29,12 @@ namespace MCL::NN
         // basic methods
 
         bool isPrepared() const;
+        NeuralNetwork *copy() const;
 
         math::Rmatrix predict(math::Rmatrix firstinput);
         void learn(LearningEngine *, math::Rmatrix);
+        math::Real loss() const;
+
         void train(LearningEngine *engine, math::Rmatrix inputs[], math::Rmatrix correctAnswers[], size_t size);
         /**
          * @brief

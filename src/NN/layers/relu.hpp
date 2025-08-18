@@ -27,5 +27,7 @@ namespace MCL::NN
 
         std::vector<math::Rmatrix *> getParameterRefs() override;
         std::vector<math::Rmatrix> getGradients() const override;
+
+        ReLULayer *copy() const override;
     };
 }

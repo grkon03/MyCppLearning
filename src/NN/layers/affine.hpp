@@ -31,6 +31,8 @@ namespace MCL::NN
         math::Rmatrix forward(math::Rmatrix) override;
         math::Rmatrix backward(math::Rmatrix) override;
 
+        AffineLayer *copy() const override;
+
         std::vector<math::Rmatrix *> getParameterRefs() override;
         std::vector<math::Rmatrix> getGradients() const override;
     };

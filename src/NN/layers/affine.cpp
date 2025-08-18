@@ -38,6 +38,11 @@ namespace MCL::NN
         return weight.transpose() * gradOutput;
     }
 
+    AffineLayer *AffineLayer::copy() const
+    {
+        return new AffineLayer(weight, bias);
+    }
+
     std::vector<math::Rmatrix *> AffineLayer::getParameterRefs()
     {
         std::vector<math::Rmatrix *> refs;

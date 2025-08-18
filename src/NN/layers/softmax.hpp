@@ -28,7 +28,9 @@ namespace MCL::NN
         size_t inputSize() const override;
         size_t outputSize() const override;
         math::Rmatrix forward(math::Rmatrix) override;
-        math::Rmatrix backwardWithCorrectAnswer(math::Rmatrix) override;
+        math::Rmatrix backwardByComparing(math::Rmatrix compared) override;
+
+        SoftmaxLastLayer *copy() const override;
 
         // last layer methods
 
