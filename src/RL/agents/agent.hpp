@@ -28,5 +28,12 @@ namespace MCL::RL
 
         virtual void setStateSize(size_t);
         virtual void setActionSize(size_t);
+
+        size_t getStateSize() const;
+        size_t getActionSize() const;
+
+        virtual VectorAction *getAction(State *) const = 0;
+        virtual math::Real update(State *state, Action *action, math::Real reward, State *nextState, bool done) = 0;
+        virtual VectorAgent *copy() const = 0;
     };
 }

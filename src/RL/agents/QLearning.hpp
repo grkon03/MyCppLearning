@@ -9,7 +9,7 @@ namespace MCL::RL::Agents
     /**
      * @brief QLearningAgent
      *
-     * @note actions are interpreted as one-hot vectors
+     * @note actions will not be interpreted as one-hot vectors
      *
      */
     class QLearningAgent : public VectorAgent

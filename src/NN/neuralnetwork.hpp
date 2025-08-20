@@ -30,6 +30,8 @@ namespace MCL::NN
 
         bool isPrepared() const;
         NeuralNetwork *copy() const;
+        size_t inputSize() const;
+        size_t outputSize() const;
 
         math::Rmatrix predict(math::Rmatrix firstinput);
         void learn(LearningEngine *, math::Rmatrix);

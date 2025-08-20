@@ -69,6 +69,20 @@ namespace MCL::NN
         return new NeuralNetwork(copiedlayers, lastlayer->copy());
     }
 
+    size_t NeuralNetwork::inputSize() const
+    {
+        if (layers.size() == 0)
+            return 0;
+        return layers[0]->inputSize();
+    }
+
+    size_t NeuralNetwork::outputSize() const
+    {
+        if (lastlayer == nullptr)
+            return 0;
+        return lastlayer->outputSize();
+    }
+
     math::Real NeuralNetwork::loss() const
     {
         return lastlayer->loss();

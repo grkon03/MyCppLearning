@@ -37,9 +37,7 @@ namespace MCL::RL::Agents
         }
         else
         {
-            auto Qs = QfuncNN->predict(state->getState());
-            auto [i, j] = Qs.argmax();
-            action.at(i, j) = 1;
+            action = QfuncNN->predict(state->getState());
         }
 
         return new VectorAction(action);

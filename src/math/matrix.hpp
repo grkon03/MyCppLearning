@@ -90,10 +90,15 @@ namespace MCL::math
 
         matrix<T> transpose() const;
 
-        template <arith U>
+        template <arith U = T>
         matrix<U> map(std::function<U(T)>) const;
-        template <arith U>
+        template <arith U = T>
         matrix<U> map(std::function<U(T, size_t)>) const;
+
+        matrix<T> connectToTop(matrix<T>) const;
+        matrix<T> connectToBottom(matrix<T>) const;
+        matrix<T> connectToLeft(matrix<T>) const;
+        matrix<T> connectToRight(matrix<T>) const;
 
         // comparations
 
@@ -160,7 +165,7 @@ namespace MCL::math
     matrix<T>::matrix(size_t noRows, size_t noColumns, std::initializer_list<T> elems) : matrix(noRows, noColumns)
     {
         assert(elems.size() == noRows * noColumns);
-        T *elemsarr = elems.begin();
+        const T *elemsarr = elems.begin();
         for (size_t i = 0; i < RC; ++i)
         {
             this->elements[i] = elemsarr[i];
@@ -620,6 +625,61 @@ namespace MCL::math
         }
 
         return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectToTop(matrix<T> mat) const
+    {
+        assert(C == mat.C);
+
+        matrix<T> ret(R + mat.R, C);
+
+        size_t i;
+        for (i = 0; i < mat.RC; ++i)
+        {
+            ret.elements[i] = mat.elements[i];
+        }
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i + mat.RC] = this->elements[i];
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectToBottom(matrix<T> mat) const
+    {
+        return mat.connectToTop(*this);
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectToLeft(matrix<T> mat) const
+    {
+        assert(R == mat.R);
+
+        matrix<T> ret(R, C + mat.C);
+
+        size_t i, j;
+        for (i = 0; i < R; ++i)
+        {
+            for (j = 0; j < mat.C; ++j)
+            {
+                ret.elements[i * ret.C + j] = mat.elements[i * mat.C + j];
+            }
+            for (j = 0; j < C; ++j)
+            {
+                ret.elements[i * ret.C + j + mat.C] = this->elements[i * C + j];
+            }
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectToRight(matrix<T> mat) const
+    {
+        return mat.connectToLeft(*this);
     }
 
     template <arith T>
