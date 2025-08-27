@@ -1,6 +1,6 @@
 #include "affine.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     AffineLayer::AffineLayer(size_t inputsize, size_t outputsize)
         : inputsize(inputsize), outputsize(outputsize) {}
@@ -23,19 +23,20 @@ namespace MCL::NN
         return outputsize;
     }
 
-    math::Rmatrix AffineLayer::forward(math::Rmatrix input)
+    math::Rmatrix AffineLayer::forward(const math::Rmatrix &input)
     {
-        assert(input.isVVector(inputsize));
+        assert(input.noRows() == inputsize);
 
         lastinput = input;
         return (weight * input + bias);
     }
 
-    math::Rmatrix AffineLayer::backward(math::Rmatrix gradOutput)
+    math::Rmatrix AffineLayer::backward(const math::Rmatrix &gradOutput)
     {
-        assert(gradOutput.isVVector(outputsize));
+        assert(gradOutput.noRows() == outputsize);
+
         gradWeight = gradOutput * lastinput.transpose();
-        gradBias = gradOutput;
+        gradBias = gradOutput.rowwiseSum();
 
         return weight.transpose() * gradOutput;
     }

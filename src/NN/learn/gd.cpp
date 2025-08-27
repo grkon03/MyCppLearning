@@ -1,6 +1,6 @@
 #include "gd.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Engines
 {
     GradientDescentEngine::GradientDescentEngine(math::Real rate) : rate(rate) {}
     GradientDescentEngine::GradientDescentEngine(const GradientDescentEngine &e) : rate(e.rate) {}

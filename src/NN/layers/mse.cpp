@@ -1,6 +1,6 @@
 #include "mse.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     namespace
     {
@@ -16,13 +16,16 @@ namespace MCL::NN
     size_t MSELastLayer::inputSize() const { return size; }
     size_t MSELastLayer::outputSize() const { return size; }
 
-    math::Rmatrix MSELastLayer::forward(math::Rmatrix input)
+    math::Rmatrix MSELastLayer::forward(const math::Rmatrix &input)
     {
+        assert(input.noRows() == size);
         return (_prediction = input);
     }
 
-    math::Rmatrix MSELastLayer::backwardByComparing(math::Rmatrix compared)
+    math::Rmatrix MSELastLayer::backwardByComparing(const math::Rmatrix &compared)
     {
+        assert(compared.noRows() == size);
+
         auto dif = _prediction - compared;
         _loss = (dif / 2).map<math::Real>(__square).average();
 

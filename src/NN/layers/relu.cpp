@@ -1,6 +1,6 @@
 #include "relu.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     namespace
     {
@@ -16,18 +16,18 @@ namespace MCL::NN
     size_t ReLULayer::inputSize() const { return size; }
     size_t ReLULayer::outputSize() const { return size; }
 
-    math::Rmatrix ReLULayer::forward(math::Rmatrix input)
+    math::Rmatrix ReLULayer::forward(const math::Rmatrix &input)
     {
-        assert(input.isVVector(size));
+        assert(input.noRows() == size);
 
         lastinput = input;
 
         return input.map<math::Real>(reluR);
     }
 
-    math::Rmatrix ReLULayer::backward(math::Rmatrix gradOutput)
+    math::Rmatrix ReLULayer::backward(const math::Rmatrix &gradOutput)
     {
-        assert(gradOutput.isVVector(size));
+        assert(gradOutput.noRows() == size);
 
         auto fn = [&](math::Real x, size_t i) -> math::Real
         {

@@ -28,13 +28,15 @@ namespace MCL::NN
     size_t SoftmaxLastLayer::inputSize() const { return size; }
     size_t SoftmaxLastLayer::outputSize() const { return size; }
 
-    math::Rmatrix SoftmaxLastLayer::forward(math::Rmatrix input)
+    math::Rmatrix SoftmaxLastLayer::forward(const math::Rmatrix &input)
     {
+        assert(input.noRows() == size);
         return _prediction = softmax(input);
     }
 
-    math::Rmatrix SoftmaxLastLayer::backwardByComparing(math::Rmatrix compared)
+    math::Rmatrix SoftmaxLastLayer::backwardByComparing(const math::Rmatrix &compared)
     {
+        assert(compared.noRows() == size);
         _loss = crossentropy(_prediction, compared);
         return _prediction - compared;
     }

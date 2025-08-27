@@ -200,12 +200,12 @@ namespace MCLSamples::RL3D4R
 
     void GameAgent::resetNN()
     {
-        vfuncNN->addLayer(new NN::AffineLayer(__rndmtx(100, Position::size, 0, 0.125), math::Rmatrix(100, 1, 0)));
-        vfuncNN->addLayer(new NN::ReLULayer(100));
-        vfuncNN->addLayer(new NN::AffineLayer(__rndmtx(50, 100, 0, 0.14142135623), math::Rmatrix(50, 1, 0)));
-        vfuncNN->addLayer(new NN::ReLULayer(50));
-        vfuncNN->addLayer(new NN::AffineLayer(__rndmtx(1, 50, 0, 0.2), math::Rmatrix(1, 1, 0)));
-        vfuncNN->setLastLayer(new NN::MSELastLayer(1));
+        vfuncNN->addLayer(new NN::Layers::AffineLayer(__rndmtx(100, Position::size, 0, 0.125), math::Rmatrix(100, 1, 0)));
+        vfuncNN->addLayer(new NN::Layers::ReLULayer(100));
+        vfuncNN->addLayer(new NN::Layers::AffineLayer(__rndmtx(50, 100, 0, 0.14142135623), math::Rmatrix(50, 1, 0)));
+        vfuncNN->addLayer(new NN::Layers::ReLULayer(50));
+        vfuncNN->addLayer(new NN::Layers::AffineLayer(__rndmtx(1, 50, 0, 0.2), math::Rmatrix(1, 1, 0)));
+        vfuncNN->setLastLayer(new NN::Layers::MSELastLayer(1));
 
         synchronizeTarget();
     }

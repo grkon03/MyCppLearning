@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace MCL::NN
+namespace MCL::NN::Engines
 {
     AdaGardEngine::AdaGardEngine(math::Real learningRate) : initialized(false), learningRate(learningRate) {}
     AdaGardEngine::AdaGardEngine(bool initialized, math::Real learningRate, math::Real delta, std::vector<std::vector<math::Rmatrix>> h)

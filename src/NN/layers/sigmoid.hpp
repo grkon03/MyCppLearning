@@ -2,7 +2,7 @@
 
 #include "layer.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     class SigmoidLayer : public Layer
     {
@@ -24,8 +24,8 @@ namespace MCL::NN
 
         size_t inputSize() const override;
         size_t outputSize() const override;
-        math::Rmatrix forward(math::Rmatrix) override;
-        math::Rmatrix backward(math::Rmatrix) override;
+        math::Rmatrix forward(const math::Rmatrix &) override;
+        math::Rmatrix backward(const math::Rmatrix &) override;
 
         std::unique_ptr<Layer> copy() const override;
 

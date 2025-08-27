@@ -9,7 +9,7 @@ int main()
     GameAgent agent;
     GameAgent beginner;
     GameEnv env;
-    NN::GradientDescentEngine engine(0.001);
+    NN::Engines::GradientDescentEngine engine(0.001);
     RL::Runners::VectorRunner runner(&agent, &env);
 
     agent.setLearningEngine(&engine);

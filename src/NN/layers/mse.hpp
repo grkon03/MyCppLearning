@@ -2,7 +2,7 @@
 
 #include "lastlayer.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     class MSELastLayer : public LastLayer
     {
@@ -24,8 +24,8 @@ namespace MCL::NN
 
         size_t inputSize() const override;
         size_t outputSize() const override;
-        math::Rmatrix forward(math::Rmatrix) override;
-        math::Rmatrix backwardByComparing(math::Rmatrix compared) override;
+        math::Rmatrix forward(const math::Rmatrix &) override;
+        math::Rmatrix backwardByComparing(const math::Rmatrix &compared) override;
 
         std::unique_ptr<LastLayer> copy() const override;
 

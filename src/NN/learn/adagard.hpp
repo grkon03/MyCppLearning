@@ -2,7 +2,7 @@
 
 #include "engine.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Engines
 {
     class AdaGardEngine : public LearningEngine
     {

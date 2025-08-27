@@ -1,6 +1,6 @@
 #include "engine.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Engines
 {
     class GradientDescentEngine : public LearningEngine
     {

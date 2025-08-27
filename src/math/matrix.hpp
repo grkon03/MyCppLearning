@@ -110,6 +110,7 @@ namespace MCL::math
         // arithmetical
 
         T sum() const;
+        matrix<T> rowwiseSum() const;
         double average() const;
         T max() const;
         std::pair<size_t, size_t> argmax() const;
@@ -715,10 +716,11 @@ namespace MCL::math
         {
             T sum = 0;
             T c = 0;
+            T y, t;
             for (size_t i = 0; i < RC; ++i)
             {
-                T y = elements[i] - c;
-                T t = sum + y;
+                y = elements[i] - c;
+                t = sum + y;
                 c = (t - sum) - y;
                 sum = t;
             }
@@ -732,6 +734,51 @@ namespace MCL::math
                 sum += elements[i];
             }
             return sum;
+        }
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::rowwiseSum() const
+    {
+        if (C <= 1)
+            return *this;
+
+        matrix<T> sumvec(R, 1, 0);
+        size_t row, col, index = 0;
+
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            T sum, c, y, t;
+            for (row = 0; row < R; ++row)
+            {
+                sum = 0;
+                for (col = 0; col < C; ++col)
+                {
+                    y = elements[index] - c;
+                    t = sum + y;
+                    c = (t - sum) - y;
+                    sum = t;
+                    ++index;
+                }
+                sumvec.elements[row] = sum;
+            }
+            return sumvec;
+        }
+        else
+        {
+            size_t index = 0;
+            T sum;
+            for (row = 0; row < R; ++row)
+            {
+                sum = 0;
+                for (col = 0; col < C; ++col)
+                {
+                    sum += elements[index];
+                    ++index;
+                }
+                sumvec.elements[row] = sum;
+            }
+            return sumvec;
         }
     }
 
