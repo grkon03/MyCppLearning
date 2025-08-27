@@ -4,11 +4,7 @@
 
 namespace MCL::NN
 {
-    /**
-     * @brief softmax with the cross entropy loss
-     *
-     */
-    class SoftmaxLastLayer : public LastLayer
+    class MSELastLayer : public LastLayer
     {
     private:
         size_t size;
@@ -21,8 +17,8 @@ namespace MCL::NN
     public:
         // constructors
 
-        SoftmaxLastLayer(size_t size);
-        SoftmaxLastLayer(const SoftmaxLastLayer &);
+        MSELastLayer(size_t size);
+        MSELastLayer(const MSELastLayer &);
 
         // basic methods
 

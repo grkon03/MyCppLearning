@@ -4,7 +4,7 @@ project(MCLsamples)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-file(GLOB_RECURSE SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file(GLOB_RECURSE MNIST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 # 保存先ディレクトリ
 set(MNIST_DIR ${CMAKE_BINARY_DIR}/data)
 file(MAKE_DIRECTORY ${MNIST_DIR})
@@ -46,7 +46,7 @@ foreach(i RANGE 0 ${num_files})
     endif()
 endforeach()
 
-add_executable(mnistsample ${SOURCES})
+add_executable(mnistsample ${MNIST_SOURCES})
 target_link_libraries(mnistsample PRIVATE MCLlib)
 
 set_target_properties(mnistsample PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

@@ -16,10 +16,10 @@ namespace MCL::RL::Agents
 
         struct Transition
         {
-            State *state;
-            Action *action;
+            const State *state;
+            const Action *action;
             math::Real reward;
-            State *nextState;
+            const State *nextState;
             bool done;
         };
         using ReplayBuffer = util::ReplayBuffer<Transition>;
@@ -41,7 +41,7 @@ namespace MCL::RL::Agents
 
         // basic methods
 
-        virtual math::Real update(State *state, Action *action, math::Real reward, State *nextState, bool done) override;
+        virtual math::Real update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done) override;
 
         virtual DQNAgent *copy() const override;
 

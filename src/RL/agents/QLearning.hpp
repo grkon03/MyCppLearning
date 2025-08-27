@@ -44,8 +44,8 @@ namespace MCL::RL::Agents
 
         // basic methods
 
-        virtual VectorAction *getAction(State *) const override;
-        virtual math::Real update(State *state, Action *action, math::Real reward, State *nextState, bool done) override;
+        virtual VectorAction *getAction(const State *) const override;
+        virtual math::Real update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done) override;
 
         virtual QLearningAgent *copy() const override;
 
@@ -56,9 +56,5 @@ namespace MCL::RL::Agents
         void setQFuncNN(NN::NeuralNetwork *);
         void setLearningEngine(NN::LearningEngine *);
         virtual void setActionSize(size_t size) override;
-
-        // getters
-
-        NN::NeuralNetwork *copyQfuncNN() const;
     };
 }

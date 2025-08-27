@@ -24,10 +24,10 @@ namespace MCL::RL::Agents
 
     QLearningAgent *QLearningAgent::copy() const
     {
-        return new QLearningAgent(statesize, actionsize, gamma, epsilon, QfuncNN->copy(), engine->copy());
+        return new QLearningAgent(statesize, actionsize, gamma, epsilon, new NN::NeuralNetwork(*QfuncNN), engine->copy().release());
     }
 
-    VectorAction *QLearningAgent::getAction(State *state) const
+    VectorAction *QLearningAgent::getAction(const State *state) const
     {
         math::Rmatrix action = math::Rmatrix(actionsize, 1, 0);
         if (unifdist01(rnd) < epsilon)
@@ -43,7 +43,7 @@ namespace MCL::RL::Agents
         return new VectorAction(action);
     }
 
-    math::Real QLearningAgent::update(State *state, Action *action, math::Real reward, State *nextState, bool done)
+    math::Real QLearningAgent::update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done)
     {
         math::Real nextQ = 0;
         if (!done)
@@ -57,10 +57,5 @@ namespace MCL::RL::Agents
         QfuncNN->learn(engine, math::Rmatrix(target));
 
         return QfuncNN->loss();
-    }
-
-    NN::NeuralNetwork *QLearningAgent::copyQfuncNN() const
-    {
-        return QfuncNN->copy();
     }
 }

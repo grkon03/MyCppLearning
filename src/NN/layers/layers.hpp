@@ -6,3 +6,4 @@
 #include "sigmoid.hpp"
 #include "lastlayer.hpp"
 #include "softmax.hpp"
+#include "mse.hpp"

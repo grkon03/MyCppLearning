@@ -28,6 +28,10 @@ namespace MCL::RL::Runners
         // training
 
         void trainEpisodes(size_t noEpisodes);
+        void trainEpisodesMC(size_t noEpisodes);
         void trainLossThresholds(math::Real thresholds, size_t maxEpisodes);
+
+        void setAgent(Agent *);
+        void setEnvironment(Environment *);
     };
 }

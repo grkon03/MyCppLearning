@@ -11,6 +11,8 @@ namespace MCL::NN
         assert(_bias.isVVector(outputsize));
     }
 
+    AffineLayer::AffineLayer(const AffineLayer &a) : AffineLayer(a.weight, a.bias) {}
+
     size_t AffineLayer::inputSize() const
     {
         return inputsize;
@@ -38,9 +40,9 @@ namespace MCL::NN
         return weight.transpose() * gradOutput;
     }
 
-    AffineLayer *AffineLayer::copy() const
+    std::unique_ptr<Layer> AffineLayer::copy() const
     {
-        return new AffineLayer(weight, bias);
+        return std::unique_ptr<Layer>(new AffineLayer(*this));
     }
 
     std::vector<math::Rmatrix *> AffineLayer::getParameterRefs()

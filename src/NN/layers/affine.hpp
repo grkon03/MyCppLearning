@@ -23,6 +23,7 @@ namespace MCL::NN
 
         AffineLayer(size_t inputsize, size_t outputsize);
         AffineLayer(math::Rmatrix _weight, math::Rmatrix _bias);
+        AffineLayer(const AffineLayer &);
 
         // basic methods
 
@@ -31,7 +32,7 @@ namespace MCL::NN
         math::Rmatrix forward(math::Rmatrix) override;
         math::Rmatrix backward(math::Rmatrix) override;
 
-        AffineLayer *copy() const override;
+        virtual std::unique_ptr<Layer> copy() const override;
 
         std::vector<math::Rmatrix *> getParameterRefs() override;
         std::vector<math::Rmatrix> getGradients() const override;

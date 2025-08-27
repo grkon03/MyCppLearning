@@ -19,8 +19,8 @@ namespace MCL::RL
         };
 
         virtual StepReturn step(Action *action) = 0;
-        virtual State *state() const = 0;
-        virtual State *reset() = 0;
+        virtual const State *state() const = 0;
+        virtual const State *reset() = 0;
     };
 
     class VectorEnvironment : public Environment<VectorState::StateType, VectorAction::ActionType>
@@ -32,7 +32,7 @@ namespace MCL::RL
         using Environment::StepReturn;
 
         virtual StepReturn step(Action *action) override = 0;
-        virtual VectorState *state() const override = 0;
-        virtual VectorState *reset() override = 0;
+        virtual const VectorState *state() const override = 0;
+        virtual const VectorState *reset() override = 0;
     };
 }

@@ -3,32 +3,38 @@
 namespace MCL::NN
 {
     GradientDescentEngine::GradientDescentEngine(math::Real rate) : rate(rate) {}
+    GradientDescentEngine::GradientDescentEngine(const GradientDescentEngine &e) : rate(e.rate) {}
 
-    void GradientDescentEngine::run(std::vector<Layer *> layers)
+    void GradientDescentEngine::run(std::vector<std::unique_ptr<Layer>> &layers)
     {
         std::vector<math::Rmatrix *> paramrefs;
         std::vector<math::Rmatrix> grads;
 
-        size_t i, len;
+        size_t i, j, len;
 
-        for (auto layer : layers)
+        for (i = 0; i < layers.size(); ++i)
         {
-            paramrefs = layer->getParameterRefs();
-            grads = layer->getGradients();
+            paramrefs = layers[i]->getParameterRefs();
+            grads = layers[i]->getGradients();
 
             assert(paramrefs.size() == grads.size());
 
             len = paramrefs.size();
 
-            for (i = 0; i < len; ++i)
+            for (j = 0; j < len; ++j)
             {
-                *(paramrefs[i]) -= rate * grads[i];
+                *(paramrefs[j]) -= rate * grads[j];
             }
         }
     }
 
-    GradientDescentEngine *GradientDescentEngine::copy() const
+    std::unique_ptr<LearningEngine> GradientDescentEngine::copy() const
     {
-        return new GradientDescentEngine(rate);
+        return std::unique_ptr<LearningEngine>(new GradientDescentEngine(*this));
+    }
+
+    void GradientDescentEngine::setRate(math::Real _rate)
+    {
+        rate = _rate;
     }
 }

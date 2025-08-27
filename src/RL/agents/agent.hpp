@@ -11,8 +11,8 @@ namespace MCL::RL
     public:
         using Action = Action<ActionType>;
         using State = State<StateType>;
-        virtual Action *getAction(State *) const = 0;
-        virtual math::Real update(State *state, Action *action, math::Real reward, State *nextState, bool done) = 0;
+        virtual Action *getAction(const State *) const = 0;
+        virtual math::Real update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done) = 0;
         virtual Agent<StateType, ActionType> *copy() const = 0;
     };
 
@@ -32,8 +32,8 @@ namespace MCL::RL
         size_t getStateSize() const;
         size_t getActionSize() const;
 
-        virtual VectorAction *getAction(State *) const = 0;
-        virtual math::Real update(State *state, Action *action, math::Real reward, State *nextState, bool done) = 0;
+        virtual VectorAction *getAction(const State *) const = 0;
+        virtual math::Real update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done) = 0;
         virtual VectorAgent *copy() const = 0;
     };
 }

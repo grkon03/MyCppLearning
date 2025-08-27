@@ -110,9 +110,14 @@ namespace MCL::math
         // arithmetical
 
         T sum() const;
+        double average() const;
         T max() const;
         std::pair<size_t, size_t> argmax() const;
         matrix<T> hadamardProd(matrix<T>) const;
+        /**
+         * @note delta is a constant to avoid division by 0, calculate *this / (arg + delta) for each elements
+         */
+        matrix<T> hadamardDiv(matrix<T>, T) const;
     };
 
     template <arith T>
@@ -731,6 +736,19 @@ namespace MCL::math
     }
 
     template <arith T>
+    double matrix<T>::average() const
+    {
+        double ave = 0;
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            ave += (static_cast<double>(this->elements[i]) - ave) / (i + 1);
+        }
+
+        return ave;
+    }
+
+    template <arith T>
     T matrix<T>::max() const
     {
         static_assert(std::totally_ordered<T>, "max() can be used only in the case that T is totally ordered");
@@ -769,7 +787,7 @@ namespace MCL::math
             }
         }
 
-        return {i / C, i % C};
+        return {i_max / C, i_max % C};
     }
 
     template <arith T>
@@ -782,6 +800,21 @@ namespace MCL::math
         for (i = 0; i < RC; ++i)
         {
             ret.elements[i] = this->elements[i] * mat.elements[i];
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::hadamardDiv(matrix<T> mat, T delta) const
+    {
+        assert(R == mat.R && C == mat.C);
+
+        matrix<T> ret(R, C);
+        size_t i;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = this->elements[i] / (mat.elements[i] + delta);
         }
 
         return ret;

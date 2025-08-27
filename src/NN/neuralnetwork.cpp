@@ -1,72 +1,37 @@
 #include "neuralnetwork.hpp"
+#include <fstream>
 
 namespace MCL::NN
 {
-    namespace
+    NeuralNetwork::NeuralNetwork() : layers(), lastlayer(nullptr) {}
+    NeuralNetwork::NeuralNetwork(const NeuralNetwork &nn)
     {
-        bool isGoodLayers(std::vector<Layer *> layers)
+        lastlayer = std::move(nn.lastlayer->copy());
+        size_t i, nolayers = nn.layers.size();
+        layers.clear();
+        layers.resize(nolayers);
+
+        for (i = 0; i < nolayers; ++i)
         {
-            size_t i = 0, len = layers.size();
-
-            if (len == 0)
-                return false;
-            else if (layers[0] == nullptr)
-                return false;
-
-            size_t prevOutputSize = layers[0]->outputSize();
-            Layer *layer;
-
-            for (i = 1; i < len; ++i)
-            {
-                layer = layers[i];
-                if (layer == nullptr)
-                    return false;
-                if (layer->inputSize() == prevOutputSize)
-                    prevOutputSize = layer->outputSize();
-                else
-                    return false;
-            }
-
-            return true;
+            layers[i] = std::move(nn.layers[i]->copy());
         }
     }
 
-    NeuralNetwork::NeuralNetwork() : layers({}), noLayers(0), lastlayer(nullptr), inputsize(0) {}
-    NeuralNetwork::NeuralNetwork(std::vector<Layer *> layers, LastLayer *lastlayer)
-        : layers(layers), noLayers(layers.size()), lastlayer(lastlayer)
-    {
-        assert(isGoodLayers(layers));
-        inputsize = layers[0]->inputSize();
-    }
-
-    void NeuralNetwork::addLayer(Layer *layer)
+    void NeuralNetwork::addLayer(const Layer *layer)
     {
         assert(layer != nullptr);
-        layers.push_back(layer);
-        ++noLayers;
+        layers.push_back(std::move(layer->copy()));
     }
 
     void NeuralNetwork::setLastLayer(LastLayer *_lastlayer)
     {
         assert(_lastlayer != nullptr);
-        lastlayer = _lastlayer;
+        lastlayer = _lastlayer->copy();
     }
 
     bool NeuralNetwork::isPrepared() const
     {
         return lastlayer != nullptr && layers.size() != 0;
-    }
-
-    NeuralNetwork *NeuralNetwork::copy() const
-    {
-        std::vector<Layer *> copiedlayers;
-        size_t i;
-        for (i = 0; i < noLayers; ++i)
-        {
-            copiedlayers.push_back(layers[i]->copy());
-        }
-
-        return new NeuralNetwork(copiedlayers, lastlayer->copy());
     }
 
     size_t NeuralNetwork::inputSize() const
@@ -83,6 +48,11 @@ namespace MCL::NN
         return lastlayer->outputSize();
     }
 
+    size_t NeuralNetwork::noLayers() const
+    {
+        return layers.size();
+    }
+
     math::Real NeuralNetwork::loss() const
     {
         return lastlayer->loss();
@@ -95,7 +65,7 @@ namespace MCL::NN
         size_t i;
         math::Rmatrix input = firstinput;
 
-        for (i = 0; i < noLayers; ++i)
+        for (i = 0; i < layers.size(); ++i)
         {
             input = layers[i]->forward(input);
         }
@@ -110,9 +80,9 @@ namespace MCL::NN
         size_t i = 0;
         math::Rmatrix gradOutput = lastlayer->backwardByComparing(correctAnswer);
 
-        for (i = 1; i <= noLayers; ++i)
+        for (i = 1; i <= layers.size(); ++i)
         {
-            gradOutput = layers[noLayers - i]->backward(gradOutput);
+            gradOutput = layers[layers.size() - i]->backward(gradOutput);
         }
 
         engine->run(layers);
@@ -143,5 +113,41 @@ namespace MCL::NN
         }
 
         return sum / size;
+    }
+
+    void NeuralNetwork::saveParameters(std::string filename)
+    {
+        std::ofstream ofs(filename, std::ios::binary | std::ios::trunc);
+        if (!ofs)
+        {
+            std::cout << "fail to open the file: " << filename << std::endl;
+            return;
+        }
+        size_t i, nolayers = layers.size(), j, k;
+        for (i = 0; i < nolayers; ++i)
+        {
+            auto params = layers[i]->getParameterRefs();
+            for (j = 0; j < params.size(); ++j)
+            {
+                auto param = params[j];
+                for (k = 0; k < param->noRows() * param->noColumns(); ++k)
+                    ofs.write(reinterpret_cast<const char *>(&param->direct(k)), sizeof(param->direct(k)));
+            }
+        }
+
+        ofs.close();
+    }
+
+    NeuralNetwork &NeuralNetwork::operator=(const NeuralNetwork &nn)
+    {
+        size_t i, nolayers = nn.layers.size();
+        layers = std::vector<std::unique_ptr<Layer>>(nolayers);
+        for (i = 0; i < nolayers; ++i)
+        {
+            layers[i] = std::move(nn.layers[i]->copy());
+        }
+        lastlayer = lastlayer->copy();
+
+        return *this;
     }
 }

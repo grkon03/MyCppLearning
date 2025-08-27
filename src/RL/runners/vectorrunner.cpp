@@ -10,7 +10,7 @@ namespace MCL::RL::Runners
         size_t i;
         StepReturn stepret;
         Action *a;
-        State *s, *nexts;
+        const State *s, *nexts;
         bool done;
 
         for (i = 0; i < noEpisodes; ++i)
@@ -18,14 +18,54 @@ namespace MCL::RL::Runners
             done = false;
             s = environment->reset();
 
-            while (done)
+            while (!done)
             {
                 a = agent->getAction(s);
                 stepret = environment->step(a);
                 nexts = environment->state();
-                agent->update(s, a, stepret.reward, s, stepret.done);
+                agent->update(s, a, stepret.reward, nexts, stepret.done);
                 s = nexts;
                 done = stepret.done;
+            }
+        }
+    }
+
+    void VectorRunner::trainEpisodesMC(size_t noEpisodes)
+    {
+        size_t i;
+        StepReturn stepret;
+        Action *a;
+        const State *s, *nexts;
+        bool done;
+
+        struct Piece
+        {
+            const State *s;
+            const Action *a;
+            const State *nexts;
+        };
+
+        std::vector<Piece> episode;
+
+        for (i = 0; i < noEpisodes; ++i)
+        {
+            episode = {};
+            done = false;
+            s = environment->reset();
+
+            while (!done)
+            {
+                a = agent->getAction(s);
+                stepret = environment->step(a);
+                nexts = environment->state();
+                episode.push_back({s, a, nexts});
+                s = nexts;
+                done = stepret.done;
+            }
+
+            for (auto p : episode)
+            {
+                agent->update(p.s, p.a, stepret.reward, p.nexts, true);
             }
         }
     }
@@ -35,7 +75,7 @@ namespace MCL::RL::Runners
         math::Real lossave;
         StepReturn stepret;
         Action *a;
-        State *s, *nexts;
+        const State *s, *nexts;
         size_t count, maxCount = std::numeric_limits<size_t>::max();
         bool done;
         bool infloop = (maxEpisodes == 0);
@@ -65,5 +105,15 @@ namespace MCL::RL::Runners
             if (lossave < thresholds)
                 break;
         }
+    }
+
+    void VectorRunner::setAgent(Agent *_agent)
+    {
+        agent = _agent;
+    }
+
+    void VectorRunner::setEnvironment(Environment *_env)
+    {
+        environment = _env;
     }
 }

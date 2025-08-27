@@ -55,6 +55,9 @@ namespace MCL::RL::util
         if (size < batchsize)
             batchsize = size;
 
+        if (batchsize == 0)
+            return std::vector<T>();
+
         std::vector<size_t> indices(size);
         size_t i;
         for (i = 0; i < size; ++i)
@@ -94,5 +97,6 @@ namespace MCL::RL::util
 
         buffer = rewinded;
         buffer.resize(newCapacity);
+        capacity = newCapacity;
     }
 }

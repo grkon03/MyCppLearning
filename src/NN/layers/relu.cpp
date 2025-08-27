@@ -11,6 +11,7 @@ namespace MCL::NN
     }
 
     ReLULayer::ReLULayer(size_t size) : size(size) {}
+    ReLULayer::ReLULayer(const ReLULayer &r) : size(r.size) {}
 
     size_t ReLULayer::inputSize() const { return size; }
     size_t ReLULayer::outputSize() const { return size; }
@@ -46,8 +47,8 @@ namespace MCL::NN
         return std::vector<math::Rmatrix>();
     }
 
-    ReLULayer *ReLULayer::copy() const
+    std::unique_ptr<Layer> ReLULayer::copy() const
     {
-        return new ReLULayer(size);
+        return std::unique_ptr<Layer>(new ReLULayer(*this));
     }
 }

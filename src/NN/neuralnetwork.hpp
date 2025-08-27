@@ -9,29 +9,26 @@ namespace MCL::NN
     class NeuralNetwork
     {
     private:
-        std::vector<Layer *> layers;
-        size_t inputsize;
-        size_t noLayers;
-
-        LastLayer *lastlayer;
+        std::vector<std::unique_ptr<Layer>> layers;
+        std::unique_ptr<LastLayer> lastlayer;
 
     public:
         // constructors
 
         NeuralNetwork();
-        NeuralNetwork(std::vector<Layer *>, LastLayer *);
+        NeuralNetwork(const NeuralNetwork &);
 
         // set up
 
-        void addLayer(Layer *);
+        void addLayer(const Layer *);
         void setLastLayer(LastLayer *);
 
         // basic methods
 
         bool isPrepared() const;
-        NeuralNetwork *copy() const;
         size_t inputSize() const;
         size_t outputSize() const;
+        size_t noLayers() const;
 
         math::Rmatrix predict(math::Rmatrix firstinput);
         void learn(LearningEngine *, math::Rmatrix);
@@ -51,5 +48,9 @@ namespace MCL::NN
          */
         math::Real accuracy(math::Rmatrix testinputs[], math::Rmatrix correctAnswers[], size_t size,
                             std::function<math::Real(math::Rmatrix, math::Rmatrix)> correctnessCalculator);
+
+        void saveParameters(std::string filename);
+
+        NeuralNetwork &operator=(const NeuralNetwork &);
     };
 }

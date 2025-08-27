@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "../../math/math.hpp"
 
 namespace MCL::NN
@@ -8,12 +9,14 @@ namespace MCL::NN
     class Layer
     {
     public:
+        virtual ~Layer() = default;
+
         virtual size_t inputSize() const = 0;
         virtual size_t outputSize() const = 0;
         virtual math::Rmatrix forward(math::Rmatrix) = 0;  // data should be vertical vectors
         virtual math::Rmatrix backward(math::Rmatrix) = 0; // data should be vertical vectors
 
-        virtual Layer *copy() const = 0;
+        virtual std::unique_ptr<Layer> copy() const = 0;
 
         // learn
 

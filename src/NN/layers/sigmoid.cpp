@@ -4,6 +4,7 @@
 namespace MCL::NN
 {
     SigmoidLayer::SigmoidLayer(size_t size) : size(size) {}
+    SigmoidLayer::SigmoidLayer(const SigmoidLayer &s) : size(s.size) {}
 
     size_t SigmoidLayer::inputSize() const
     {
@@ -30,9 +31,9 @@ namespace MCL::NN
                                           { return x * lastoutput.direct(i) * lastoutput.direct(i) * std::exp(-lastinput.direct(i)); });
     }
 
-    SigmoidLayer *SigmoidLayer::copy() const
+    std::unique_ptr<Layer> SigmoidLayer::copy() const
     {
-        return new SigmoidLayer(size);
+        return std::unique_ptr<Layer>(new SigmoidLayer(*this));
     }
 
     std::vector<math::Rmatrix *> SigmoidLayer::getParameterRefs()

@@ -23,6 +23,7 @@ namespace MCL::NN
     }
 
     SoftmaxLastLayer::SoftmaxLastLayer(size_t size) : size(size) {}
+    SoftmaxLastLayer::SoftmaxLastLayer(const SoftmaxLastLayer &s) : size(s.size) {}
 
     size_t SoftmaxLastLayer::inputSize() const { return size; }
     size_t SoftmaxLastLayer::outputSize() const { return size; }
@@ -38,9 +39,9 @@ namespace MCL::NN
         return _prediction - compared;
     }
 
-    SoftmaxLastLayer *SoftmaxLastLayer::copy() const
+    std::unique_ptr<LastLayer> SoftmaxLastLayer::copy() const
     {
-        return new SoftmaxLastLayer(size);
+        return std::unique_ptr<LastLayer>(new SoftmaxLastLayer(*this));
     }
 
     math::Rmatrix SoftmaxLastLayer::prediction() const { return _prediction; }

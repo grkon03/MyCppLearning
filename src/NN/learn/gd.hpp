@@ -11,10 +11,13 @@ namespace MCL::NN
         // constructors
 
         GradientDescentEngine(math::Real rate);
+        GradientDescentEngine(const GradientDescentEngine &);
 
         // basic methods
 
-        void run(std::vector<Layer *> layers) override;
-        GradientDescentEngine *copy() const override;
+        void run(std::vector<std::unique_ptr<Layer>> &layers) override;
+        std::unique_ptr<LearningEngine> copy() const override;
+
+        void setRate(math::Real);
     };
 }

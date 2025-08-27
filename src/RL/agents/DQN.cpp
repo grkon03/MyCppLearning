@@ -11,16 +11,16 @@ namespace MCL::RL::Agents
     DQNAgent::DQNAgent(size_t statesize, size_t actionsize, size_t batchsize, size_t replayBufferCapacity,
                        math::Real gamma, math::Real epsilon, NN::NeuralNetwork *QfuncNN, NN::LearningEngine *engine)
         : QLearningAgent(statesize, actionsize, gamma, epsilon, QfuncNN, engine),
-          batchsize(batchsize), replayBuffer(replayBufferCapacity), QfuncNNtarget(QfuncNN->copy()) {}
+          batchsize(batchsize), replayBuffer(replayBufferCapacity), QfuncNNtarget(new NN::NeuralNetwork(*QfuncNN)) {}
     DQNAgent::DQNAgent(QLearningAgent qlagent, size_t batchsize, size_t replayBufferCapacity)
         : QLearningAgent(*qlagent.copy()), batchsize(batchsize), replayBuffer(replayBufferCapacity),
-          QfuncNNtarget(qlagent.copyQfuncNN()) {}
+          QfuncNNtarget(new NN::NeuralNetwork(*QfuncNN)) {}
 
     void DQNAgent::setBatchSize(size_t _batchsize) { batchsize = _batchsize; }
     void DQNAgent::resizeReplayBufferCapacity(size_t capacity) { replayBuffer.resizeCapacity(capacity); }
-    void DQNAgent::synchronizeQfunc() { QfuncNNtarget = QfuncNN->copy(); }
+    void DQNAgent::synchronizeQfunc() { *QfuncNNtarget = *QfuncNN; }
 
-    math::Real DQNAgent::update(State *state, Action *action, math::Real reward, State *nextState, bool done)
+    math::Real DQNAgent::update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done)
     {
         replayBuffer.push({state, action, reward, nextState, done});
 
