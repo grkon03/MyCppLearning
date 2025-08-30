@@ -28,15 +28,17 @@ namespace MCL::NN::Layers
         assert(input.noRows() == inputsize);
 
         lastinput = input;
-        return (weight * input + bias);
+        return (weight * input).plusEachColumn(bias);
     }
 
     math::Rmatrix AffineLayer::backward(const math::Rmatrix &gradOutput)
     {
         assert(gradOutput.noRows() == outputsize);
 
-        gradWeight = gradOutput * lastinput.transpose();
-        gradBias = gradOutput.rowwiseSum();
+        size_t batchsize = gradOutput.noColumns();
+
+        gradWeight = gradOutput * (lastinput.transpose() / batchsize);
+        gradBias = (gradOutput / batchsize).rowwiseSum(false);
 
         return weight.transpose() * gradOutput;
     }

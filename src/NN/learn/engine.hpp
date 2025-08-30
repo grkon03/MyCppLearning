@@ -9,7 +9,7 @@ namespace MCL::NN
     public:
         virtual ~LearningEngine() = default;
 
-        virtual void run(std::vector<std::unique_ptr<Layer>> &) = 0;
+        virtual void run(std::vector<std::unique_ptr<Layer>> &layers) = 0;
         virtual std::unique_ptr<LearningEngine> copy() const = 0;
     };
 }

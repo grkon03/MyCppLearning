@@ -4,6 +4,11 @@
 
 namespace MCL::NN::Engines
 {
+    namespace
+    {
+        math::Real __sqrt(math::Real x) { return std::sqrt(x); }
+    }
+
     AdaGardEngine::AdaGardEngine(math::Real learningRate) : initialized(false), learningRate(learningRate) {}
     AdaGardEngine::AdaGardEngine(bool initialized, math::Real learningRate, math::Real delta, std::vector<std::vector<math::Rmatrix>> h)
         : initialized(initialized), learningRate(learningRate), delta(delta), h(h) {}
@@ -61,9 +66,7 @@ namespace MCL::NN::Engines
             for (j = 0; j < noparams; ++j)
             {
                 h[i][j] += grads[j].hadamardProd(grads[j]);
-                *params[j] -= learningRate * grads[j].hadamardDiv(h[i][j].map<math::Real>([](math::Real x)
-                                                                                          { return std::sqrt(x); }),
-                                                                  delta);
+                *params[j] -= learningRate * grads[j].hadamardDiv(h[i][j].map<math::Real>(__sqrt), delta);
             }
         }
     }

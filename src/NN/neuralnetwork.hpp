@@ -30,11 +30,15 @@ namespace MCL::NN
         size_t outputSize() const;
         size_t noLayers() const;
 
-        math::Rmatrix predict(math::Rmatrix firstinput);
-        void learn(LearningEngine *, math::Rmatrix);
+        math::Rmatrix predict(const math::Rmatrix &firstinput);
+        void learn(LearningEngine *, const math::Rmatrix &);
+        void learn(LearningEngine *engine, const math::Rmatrix &firstinput, const math::Rmatrix &compare);
         math::Real loss() const;
 
-        void train(LearningEngine *engine, math::Rmatrix inputs[], math::Rmatrix correctAnswers[], size_t size);
+        void train(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size);
+        void trainMinibatch(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size,
+                            size_t batchsize, size_t epochsToTrain);
+
         /**
          * @brief
          *

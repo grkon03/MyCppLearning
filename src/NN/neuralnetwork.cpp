@@ -1,5 +1,12 @@
 #include "neuralnetwork.hpp"
 #include <fstream>
+#include <random>
+#include <algorithm>
+
+namespace
+{
+    std::mt19937 __rndgen = std::mt19937(std::random_device()());
+}
 
 namespace MCL::NN
 {
@@ -58,7 +65,7 @@ namespace MCL::NN
         return lastlayer->loss();
     }
 
-    math::Rmatrix NeuralNetwork::predict(math::Rmatrix firstinput)
+    math::Rmatrix NeuralNetwork::predict(const math::Rmatrix &firstinput)
     {
         assert(isPrepared());
 
@@ -75,10 +82,10 @@ namespace MCL::NN
         return lastlayer->prediction();
     }
 
-    void NeuralNetwork::learn(LearningEngine *engine, math::Rmatrix correctAnswer)
+    void NeuralNetwork::learn(LearningEngine *engine, const math::Rmatrix &compare)
     {
         size_t i = 0;
-        math::Rmatrix gradOutput = lastlayer->backwardByComparing(correctAnswer);
+        math::Rmatrix gradOutput = lastlayer->backwardByComparing(compare);
 
         for (i = 1; i <= layers.size(); ++i)
         {
@@ -88,14 +95,53 @@ namespace MCL::NN
         engine->run(layers);
     }
 
-    void NeuralNetwork::train(LearningEngine *engine, math::Rmatrix inputs[], math::Rmatrix correctAnswers[], size_t size)
+    void NeuralNetwork::learn(LearningEngine *engine, const math::Rmatrix &firstinput, const math::Rmatrix &compare)
+    {
+        predict(firstinput);
+        learn(engine, compare);
+    }
+
+    void NeuralNetwork::train(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size)
     {
         assert(engine != nullptr);
         size_t i;
         for (i = 0; i < size; ++i)
         {
             this->predict(inputs[i]);
-            this->learn(engine, correctAnswers[i]);
+            this->learn(engine, compares[i]);
+        }
+    }
+
+    void NeuralNetwork::trainMinibatch(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size,
+                                       size_t batchsize, size_t epochsToTrain)
+    {
+        assert(engine != nullptr);
+        size_t i, j, nowEpochs, currentbatchsize;
+        std::vector<size_t> indices(size);
+        std::vector<const math::Rmatrix *> batchinputs(batchsize);
+        std::vector<const math::Rmatrix *> batchcompares(batchsize);
+        math::Rmatrix bimat, bcmat;
+
+        for (i = 0; i < size; ++i)
+        {
+            indices[i] = i;
+        }
+
+        for (nowEpochs = 0; nowEpochs < epochsToTrain; ++nowEpochs)
+        {
+            std::shuffle(indices.begin(), indices.end(), __rndgen);
+            for (i = 0; i < size; i += batchsize)
+            {
+                currentbatchsize = std::min(batchsize, size - i);
+                for (j = 0; j < currentbatchsize; ++j)
+                {
+                    batchinputs[j] = inputs + indices[i + j];
+                    batchcompares[j] = compares + indices[i + j];
+                }
+                bimat = math::Rmatrix::connectHorizontal(batchinputs, currentbatchsize);
+                bcmat = math::Rmatrix::connectHorizontal(batchcompares, currentbatchsize);
+                train(engine, &bimat, &bcmat, 1);
+            }
         }
     }
 

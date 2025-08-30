@@ -4,12 +4,12 @@ namespace MCL::NN
 {
     namespace
     {
+        math::Real __exp(math::Real x) { return std::exp(x); }
         math::Rmatrix softmax(const math::Rmatrix &input)
         {
-            math::Real m = input.max();
-            auto exped = (input - m).map<math::Real>([](math::Real x)
-                                                     { return std::exp(x); });
-            return exped / exped.sum();
+            math::Rmatrix m = input.columnwiseMax();
+            auto exped = input.minusEachRow(m).map<math::Real>(__exp);
+            return exped.divEachRow(exped.columnwiseSum(false));
         }
         math::Real crossentropy(const math::Rmatrix &input, const math::Rmatrix &correct)
         {

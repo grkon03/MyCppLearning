@@ -72,3 +72,65 @@ TEST(MCLmath, MatrixStrassen)
 
     EXPECT_EQ(expect, correct);
 }
+
+TEST(MCLmath, MatrixPlusEachColumn)
+{
+    math::Rmatrix mat = {
+        {-3, 9, 1, 2},
+        {10, 8, 3, -1},
+        {-5, -5, 0, 8},
+    };
+
+    math::Rmatrix vec = {
+        {-9},
+        {1},
+        {15},
+    };
+
+    math::Rmatrix correct = {
+        {-12, 0, -8, -7},
+        {11, 9, 4, 0},
+        {10, 10, 15, 23},
+    };
+
+    auto expect = mat.plusEachColumn(vec);
+
+    EXPECT_EQ(expect, correct);
+}
+
+TEST(MCLmath, MatrixConnectHorizontaly)
+{
+    math::Rmatrix mats[] = {
+        {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9},
+            {10, 11, 12},
+        },
+        {
+            {13},
+            {14},
+            {15},
+            {16},
+        },
+        {
+            {17, 18},
+            {19, 20},
+            {21, 22},
+            {23, 24},
+        },
+    };
+
+    std::vector<const math::Rmatrix *> target = {mats, mats + 1, mats + 2};
+
+    auto expect = math::Rmatrix::connectHorizontal(target);
+
+    math::Rmatrix correct = {
+        {1, 2, 3, 13, 17, 18},
+        {4, 5, 6, 14, 19, 20},
+        {7, 8, 9, 15, 21, 22},
+        {10, 11, 12, 16, 23, 24},
+    };
+
+    EXPECT_EQ(expect, correct);
+}

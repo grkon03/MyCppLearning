@@ -44,6 +44,9 @@ namespace MCL::math
 
         ~matrix();
 
+        static matrix<T> connectHorizontal(std::vector<const matrix<T> *>);
+        static matrix<T> connectHorizontal(std::vector<const matrix<T> *>, size_t);
+
         // basic methods
 
         T &at(size_t, size_t);
@@ -70,19 +73,23 @@ namespace MCL::math
 
         matrix<T> operator-() const;
 
-        matrix<T> operator+(matrix<T>) const;
+        matrix<T> operator+(const matrix<T> &) const;
         matrix<T> operator+(T) const;
-        matrix<T> operator-(matrix<T>) const;
+        matrix<T> operator-(const matrix<T> &) const;
         matrix<T> operator-(T) const;
-        matrix<T> operator*(matrix<T>) const;
+        matrix<T> operator*(const matrix<T> &) const;
         matrix<T> operator*(T) const;
         matrix<T> operator/(T) const;
 
-        matrix<T> strassen(matrix<T>) const;
+        matrix<T> plusEachColumn(const matrix<T> &vec) const;
+        matrix<T> minusEachRow(const matrix<T> &vec) const;
+        matrix<T> divEachRow(const matrix<T> &vec) const;
 
-        const matrix<T> &operator+=(matrix<T>);
+        matrix<T> strassen(const matrix<T> &) const;
+
+        const matrix<T> &operator+=(const matrix<T> &);
         const matrix<T> &operator+=(T);
-        const matrix<T> &operator-=(matrix<T>);
+        const matrix<T> &operator-=(const matrix<T> &);
         const matrix<T> &operator-=(T);
         const matrix<T> &operator*=(T);
 
@@ -94,31 +101,35 @@ namespace MCL::math
         matrix<U> map(std::function<U(T)>) const;
         template <arith U = T>
         matrix<U> map(std::function<U(T, size_t)>) const;
+        template <arith U = T>
+        matrix<U> map(std::function<U(T, size_t, size_t)>) const;
 
-        matrix<T> connectToTop(matrix<T>) const;
-        matrix<T> connectToBottom(matrix<T>) const;
-        matrix<T> connectToLeft(matrix<T>) const;
-        matrix<T> connectToRight(matrix<T>) const;
+        matrix<T> connectToTop(const matrix<T> &) const;
+        matrix<T> connectToBottom(const matrix<T> &) const;
+        matrix<T> connectToLeft(const matrix<T> &) const;
+        matrix<T> connectToRight(const matrix<T> &) const;
 
         // comparations
 
-        bool operator==(matrix<T>) const;
+        bool operator==(const matrix<T> &) const;
         bool operator==(T) const;
 
-        bool isSameShape(matrix<T>) const;
+        bool isSameShape(const matrix<T> &) const;
 
         // arithmetical
 
         T sum() const;
-        matrix<T> rowwiseSum() const;
+        matrix<T> rowwiseSum(bool useKahan) const;
+        matrix<T> columnwiseSum(bool useKahan) const;
         double average() const;
         T max() const;
+        matrix<T> columnwiseMax() const;
         std::pair<size_t, size_t> argmax() const;
-        matrix<T> hadamardProd(matrix<T>) const;
+        matrix<T> hadamardProd(const matrix<T> &) const;
         /**
          * @note delta is a constant to avoid division by 0, calculate *this / (arg + delta) for each elements
          */
-        matrix<T> hadamardDiv(matrix<T>, T) const;
+        matrix<T> hadamardDiv(const matrix<T> &, T) const;
     };
 
     template <arith T>
@@ -240,6 +251,44 @@ namespace MCL::math
         {
             this->elements[i] = mat.elements[i];
         }
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectHorizontal(std::vector<const matrix<T> *> matrices)
+    {
+        return matrix<T>::connectHorizontal(matrices, matrices.size());
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectHorizontal(std::vector<const matrix<T> *> matrices, size_t size)
+    {
+        assert(size > 0);
+
+        size_t R = matrices[0]->noRows();
+        size_t i, C = 0;
+
+        for (i = 0; i < size; ++i)
+        {
+            assert(matrices[i]->noRows() == R);
+            C += matrices[i]->noColumns();
+        }
+
+        matrix<T> ret(R, C);
+
+        size_t j, k, index = 0;
+        for (i = 0; i < R; ++i)
+        {
+            for (j = 0; j < size; ++j)
+            {
+                for (k = 0; k < matrices[j]->noColumns(); ++k)
+                {
+                    ret.elements[index] = matrices[j]->at(i, k);
+                    ++index;
+                }
+            }
+        }
+
+        return ret;
     }
 
     template <arith T>
@@ -394,7 +443,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::operator+(matrix<T> mat) const
+    matrix<T> matrix<T>::operator+(const matrix<T> &mat) const
     {
         assert(R == mat.R && C == mat.C);
         matrix<T> ret(R, C);
@@ -417,7 +466,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::operator-(matrix<T> mat) const
+    matrix<T> matrix<T>::operator-(const matrix<T> &mat) const
     {
         assert(R == mat.R && C == mat.C);
         matrix<T> ret(R, C);
@@ -442,7 +491,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::operator*(matrix<T> mat) const
+    matrix<T> matrix<T>::operator*(const matrix<T> &mat) const
     {
         assert(C == mat.R);
 
@@ -486,7 +535,53 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::strassen(matrix<T> mat) const
+    matrix<T> matrix<T>::plusEachColumn(const matrix<T> &vec) const
+    {
+        assert(vec.isVVector(R));
+        matrix<T> ret(R, C);
+        size_t i, r = 0;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = elements[i] + vec.elements[r];
+            if (i % C == C - 1)
+                ++r;
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::minusEachRow(const matrix<T> &vec) const
+    {
+        assert(vec.isHVector(C));
+        matrix<T> ret(R, C);
+        size_t i, c = 0;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = elements[i] - vec.elements[c];
+            c = (c + 1) % C;
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::divEachRow(const matrix<T> &vec) const
+    {
+        assert(vec.isHVector(C));
+        matrix<T> ret(R, C);
+        size_t i, c = 0;
+        for (i = 0; i < RC; ++i)
+        {
+            ret.elements[i] = elements[i] / vec.elements[c];
+            c = (c + 1) % C;
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::strassen(const matrix<T> &mat) const
     {
         matrix<T> A = this->padding(0, R % 2, 0, C % 2);
         matrix<T> B = mat.padding(0, mat.R % 2, 0, mat.C % 2);
@@ -534,7 +629,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    const matrix<T> &matrix<T>::operator+=(matrix<T> mat)
+    const matrix<T> &matrix<T>::operator+=(const matrix<T> &mat)
     {
         size_t i;
         for (i = 0; i < RC; ++i)
@@ -546,7 +641,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    const matrix<T> &matrix<T>::operator-=(matrix<T> mat)
+    const matrix<T> &matrix<T>::operator-=(const matrix<T> &mat)
     {
         size_t i;
         for (i = 0; i < RC; ++i)
@@ -634,7 +729,23 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::connectToTop(matrix<T> mat) const
+    template <arith U>
+    matrix<U> matrix<T>::map(std::function<U(T, size_t, size_t)> func) const
+    {
+        matrix<U> ret(R, C);
+        size_t r, c, index = 0;
+        for (r = 0; r < R; ++r)
+        {
+            for (c = 0; c < C; ++c)
+            {
+                ret.element[index] = func(this->elements[index], r, c);
+                ++index;
+            }
+        }
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectToTop(const matrix<T> &mat) const
     {
         assert(C == mat.C);
 
@@ -654,13 +765,13 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::connectToBottom(matrix<T> mat) const
+    matrix<T> matrix<T>::connectToBottom(const matrix<T> &mat) const
     {
         return mat.connectToTop(*this);
     }
 
     template <arith T>
-    matrix<T> matrix<T>::connectToLeft(matrix<T> mat) const
+    matrix<T> matrix<T>::connectToLeft(const matrix<T> &mat) const
     {
         assert(R == mat.R);
 
@@ -683,13 +794,13 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::connectToRight(matrix<T> mat) const
+    matrix<T> matrix<T>::connectToRight(const matrix<T> &mat) const
     {
         return mat.connectToLeft(*this);
     }
 
     template <arith T>
-    bool matrix<T>::operator==(matrix<T> mat) const
+    bool matrix<T>::operator==(const matrix<T> &mat) const
     {
         if (C != mat.C || R != mat.R)
             return false;
@@ -704,7 +815,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    bool matrix<T>::isSameShape(matrix<T> mat) const
+    bool matrix<T>::isSameShape(const matrix<T> &mat) const
     {
         return (R == mat.R && C == mat.C);
     }
@@ -738,7 +849,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::rowwiseSum() const
+    matrix<T> matrix<T>::rowwiseSum(bool useKahan) const
     {
         if (C <= 1)
             return *this;
@@ -746,7 +857,7 @@ namespace MCL::math
         matrix<T> sumvec(R, 1, 0);
         size_t row, col, index = 0;
 
-        if constexpr (std::is_floating_point_v<T>)
+        if (useKahan && std::is_floating_point_v<T>)
         {
             T sum, c, y, t;
             for (row = 0; row < R; ++row)
@@ -766,7 +877,6 @@ namespace MCL::math
         }
         else
         {
-            size_t index = 0;
             T sum;
             for (row = 0; row < R; ++row)
             {
@@ -780,6 +890,72 @@ namespace MCL::math
             }
             return sumvec;
         }
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::columnwiseSum(bool useKahan) const
+    {
+        if (R <= 1)
+            return *this;
+        matrix<T> ret(1, C);
+
+        size_t i, col;
+
+        if (useKahan && std::is_floating_point_v<T>)
+        {
+            std::vector<T> c(C), y(C), t(C);
+            for (col = 0; col < C; ++col)
+            {
+                ret.elements[col] = this->elements[col];
+            }
+            for (i = C; i < RC; ++i)
+            {
+                col = (i % C);
+                y[col] = elements[i] - c[col];
+                t[col] = ret.elements[col] + y[col];
+                c[col] = (t[col] - ret.elements[col]) - y[col];
+                ret.elements[col] = t[col];
+            }
+        }
+        else
+        {
+            for (col = 0; col < C; ++col)
+            {
+                ret.elements[col] = this->elements[col];
+            }
+            for (i = C; i < RC; ++i)
+            {
+                col = i % C;
+                ret.elements[col] += this->elements[i];
+            }
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::columnwiseMax() const
+    {
+        static_assert(std::totally_ordered<T>, "columnwiseMax() can be used only in the case that T is totally ordered");
+
+        matrix<T> maxvec(1, C);
+        size_t r, c, index = 0;
+        for (c = 0; c < C; ++c)
+        {
+            maxvec.elements[c] = this->elements[++c];
+        }
+        index = C;
+        for (r = 1; r < R; ++r)
+        {
+            for (c = 0; c < C; ++c)
+            {
+                if (maxvec.elements[c] < this->elements[index])
+                    maxvec.elements[c] = this->elements[index];
+                ++index;
+            }
+        }
+
+        return maxvec;
     }
 
     template <arith T>
@@ -838,7 +1014,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::hadamardProd(matrix<T> mat) const
+    matrix<T> matrix<T>::hadamardProd(const matrix<T> &mat) const
     {
         assert(R == mat.R && C == mat.C);
 
@@ -853,7 +1029,7 @@ namespace MCL::math
     }
 
     template <arith T>
-    matrix<T> matrix<T>::hadamardDiv(matrix<T> mat, T delta) const
+    matrix<T> matrix<T>::hadamardDiv(const matrix<T> &mat, T delta) const
     {
         assert(R == mat.R && C == mat.C);
 

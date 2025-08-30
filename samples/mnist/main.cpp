@@ -86,21 +86,12 @@ int main()
 
     NN::NeuralNetwork nn;
 
-    NN::Layers::AffineLayer al[3] =
-        {NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(100, 784, 0, 0.01),
-                                 util::randomMatrixFromNormalDistribution(100, 1, 0, 0.01)),
-         NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(50, 100, 0, 0.01),
-                                 util::randomMatrixFromNormalDistribution(50, 1, 0, 0.01)),
-         NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(10, 50, 0, 0.01),
-                                 util::randomMatrixFromNormalDistribution(10, 1, 0, 0.01))};
-    NN::Layers::SigmoidLayer sig[2] = {NN::Layers::SigmoidLayer(100), NN::Layers::SigmoidLayer(50)};
-    nn.addLayer(&al[0]);
-    nn.addLayer(&sig[0]);
-    nn.addLayer(&al[1]);
-    nn.addLayer(&sig[1]);
-    nn.addLayer(&al[2]);
-    NN::SoftmaxLastLayer ll = NN::SoftmaxLastLayer(10);
-    nn.setLastLayer(&ll);
+    nn.addLayer(new NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(50, 784, 0, std::sqrt((double)2 / 784)),
+                                            math::Rmatrix(50, 1, 0.01)));
+    nn.addLayer(new NN::Layers::ReLULayer(50));
+    nn.addLayer(new NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(10, 50, 0, std::sqrt((double)2 / 60)),
+                                            math::Rmatrix(10, 1, 0.01)));
+    nn.setLastLayer(new NN::SoftmaxLastLayer(10));
 
     // load data
 
@@ -115,6 +106,6 @@ int main()
     auto engine = NN::Engines::GradientDescentEngine(0.1);
 
     std::cout << "accuracy before train: " << nn.accuracy(testdata, testans, test.noImages, correctnessCalc) << std::endl;
-    nn.train(&engine, traindata, trainans, train.noImages);
+    nn.trainMinibatch(&engine, traindata, trainans, train.noImages, 100, 10);
     std::cout << "accuracy after train1: " << nn.accuracy(testdata, testans, test.noImages, correctnessCalc) << std::endl;
 }
