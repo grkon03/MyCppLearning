@@ -4,8 +4,23 @@
 
 namespace MCL::NN::Layers
 {
+
     class AffineLayer : public Layer
     {
+    public:
+        enum class WeightInitType
+        {
+            Zero,
+            He,
+            Xavier,
+        };
+
+        enum class BiasInitType
+        {
+            Zero,
+            SmallPositive,
+        };
+
     private:
         size_t inputsize;
         size_t outputsize;
@@ -22,6 +37,7 @@ namespace MCL::NN::Layers
         // constructors
 
         AffineLayer(size_t inputsize, size_t outputsize);
+        AffineLayer(size_t inputsize, size_t outputsize, WeightInitType wit, BiasInitType bit);
         AffineLayer(math::Rmatrix _weight, math::Rmatrix _bias);
         AffineLayer(const AffineLayer &);
 

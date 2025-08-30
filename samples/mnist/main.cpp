@@ -86,11 +86,13 @@ int main()
 
     NN::NeuralNetwork nn;
 
-    nn.addLayer(new NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(50, 784, 0, std::sqrt((double)2 / 784)),
-                                            math::Rmatrix(50, 1, 0.01)));
+    using WIT = NN::Layers::AffineLayer::WeightInitType;
+    using BIT = NN::Layers::AffineLayer::BiasInitType;
+    nn.addLayer(new NN::Layers::AffineLayer(784, 100, WIT::He, BIT::SmallPositive));
+    nn.addLayer(new NN::Layers::ReLULayer(100));
+    nn.addLayer(new NN::Layers::AffineLayer(100, 50, WIT::He, BIT::SmallPositive));
     nn.addLayer(new NN::Layers::ReLULayer(50));
-    nn.addLayer(new NN::Layers::AffineLayer(util::randomMatrixFromNormalDistribution(10, 50, 0, std::sqrt((double)2 / 60)),
-                                            math::Rmatrix(10, 1, 0.01)));
+    nn.addLayer(new NN::Layers::AffineLayer(50, 10, WIT::He, BIT::Zero));
     nn.setLastLayer(new NN::SoftmaxLastLayer(10));
 
     // load data
