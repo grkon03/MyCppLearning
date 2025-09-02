@@ -5,3 +5,5 @@
 #include "agents/agents.hpp"
 #include "environments/environments.hpp"
 #include "runners/runners.hpp"
+#include "searchers/searchers.hpp"
+#include "interpret/interpret.hpp"

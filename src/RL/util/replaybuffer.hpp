@@ -3,7 +3,6 @@
 #include <random>
 #include <vector>
 #include <algorithm>
-#include "../basic/basic.hpp"
 
 namespace MCL::RL::util
 {
@@ -27,6 +26,7 @@ namespace MCL::RL::util
 
         void push(T);
         std::vector<T> getBatch(size_t) const;
+        std::vector<std::vector<T>> getBatches(size_t) const;
 
         size_t getSize() const;
         size_t getCapacity() const;
@@ -75,6 +75,43 @@ namespace MCL::RL::util
         }
 
         return batch;
+    }
+
+    template <typename T>
+    std::vector<std::vector<T>> ReplayBuffer<T>::getBatches(size_t batchsize) const
+    {
+        if (batchsize == 0)
+            return std::vector<std::vector<T>>();
+
+        std::vector<size_t> indices(size);
+
+        size_t i;
+        for (i = 0; i < size; ++i)
+        {
+            indices[i] = i;
+        }
+
+        std::shuffle(indices.begin(), indices.end(), gen);
+
+        size_t noBatches = size % batchsize == 0 ? size / batchsize : size / batchsize + 1;
+
+        std::vector<std::vector<T>> ret(noBatches);
+        std::vector<T> batch(batchsize);
+
+        size_t start, i = 0, j, currentbatchsize;
+        for (start = 0; start < size; start += batchsize)
+        {
+            currentbatchsize = std::min(batchsize, size - start);
+            ret[i] = std::vector<T>(currentbatchsize);
+
+            for (j = 0; j < currentbatchsize; ++j)
+            {
+                ret[i][j] = buffer[indices[start + j]];
+            }
+            ++i;
+        }
+
+        return ret;
     }
 
     template <typename T>

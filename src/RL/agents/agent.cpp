@@ -2,12 +2,15 @@
 
 namespace MCL::RL
 {
-    VectorAgent::VectorAgent() : VectorAgent(0, 0) {}
-    VectorAgent::VectorAgent(size_t statesize, size_t actionsize) : statesize(statesize), actionsize(actionsize) {}
+    AgentType operator|(AgentType a, AgentType b)
+    {
+        return AgentType(size_t(a) | size_t(b));
+    }
 
-    size_t VectorAgent::getActionSize() const { return actionsize; }
-    size_t VectorAgent::getStateSize() const { return statesize; }
+    bool hasType(AgentType target, AgentType type)
+    {
+        return (size_t(target) & size_t(type)) == size_t(type);
+    }
 
-    void VectorAgent::setStateSize(size_t _statesize) { statesize = _statesize; }
-    void VectorAgent::setActionSize(size_t _actionsize) { actionsize = _actionsize; }
+    AgentType Agent::type() const { return AgentType::Normal; }
 }

@@ -1,39 +1,42 @@
 #pragma once
 
-#include "../../math/math.hpp"
 #include "../basic/basic.hpp"
+#include "../../math/math.hpp"
 
 namespace MCL::RL
 {
-    template <typename StateType, typename ActionType>
+    enum class AgentType
+    {
+        Normal = 0,
+        Policy = 1 << 0,
+        Value = 1 << 1,
+    };
+
+    AgentType operator|(AgentType, AgentType);
+
+    /**
+     * @brief verify the "target" has the attribute "type"
+     *
+     */
+    bool hasType(AgentType target, AgentType type);
+
     class Agent
     {
     public:
-        using Action = Action<ActionType>;
-        using State = State<StateType>;
-        virtual Action *getAction(const State *) const = 0;
-        virtual math::Real update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done) = 0;
-        virtual Agent<StateType, ActionType> *copy() const = 0;
+        virtual Action getAction() const = 0;
+        virtual math::Real update(const std::vector<Transition> &) = 0;
+
+        virtual bool searchMode() = 0;
+
+        virtual AgentType type() const;
     };
 
-    class VectorAgent : public Agent<VectorState::StateType, VectorAction::ActionType>
+    namespace Agents
     {
-    protected:
-        size_t statesize;
-        size_t actionsize;
+        template <typename DeriveredAgent>
+        DeriveredAgent *cast(Agent *);
 
-    public:
-        VectorAgent();
-        VectorAgent(size_t statesize, size_t actionsize);
-
-        virtual void setStateSize(size_t);
-        virtual void setActionSize(size_t);
-
-        size_t getStateSize() const;
-        size_t getActionSize() const;
-
-        virtual VectorAction *getAction(const State *) const = 0;
-        virtual math::Real update(const State *state, const Action *action, math::Real reward, const State *nextState, bool done) = 0;
-        virtual VectorAgent *copy() const = 0;
-    };
+        template <typename DeriveredAgent>
+        const DeriveredAgent *cast(const Agent *);
+    }
 }
