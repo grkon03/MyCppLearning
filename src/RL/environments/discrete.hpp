@@ -8,6 +8,8 @@ namespace MCL::RL::Environments
     class DiscreteActionEnvironment : public Environment
     {
     public:
+        virtual ~DiscreteActionEnvironment() = default;
+
         virtual std::vector<DiscreteAction> getPossibleActions() const = 0;
 
         virtual EnvironmentType type() const;

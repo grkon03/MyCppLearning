@@ -9,6 +9,7 @@ namespace MCL::RL::Runners
         Environment *env, Agent *agent, Searcher *searcher,
         size_t noEpisodes, size_t updatePeriod, size_t batchsize, size_t startsize, size_t epochsToTrain)
     {
+        std::vector<math::Real> losses;
         size_t i = 0, epochs, j = 0, noneUpdateCount = 0;
         for (i = 0; i < noEpisodes; ++i)
         {
@@ -42,5 +43,7 @@ namespace MCL::RL::Runners
                 }
             }
         }
+
+        return losses;
     }
 }

@@ -48,7 +48,7 @@ namespace MCL::RL::Searchers
     {
         Tree tree;
         tree.root()->value() = SearchNode{
-            .env = std::make_unique<DiscreteEnv>(env->copy().release()),
+            .env = std::unique_ptr<DiscreteEnv>(Environments::cast<DiscreteEnv>(env->copy().release())),
             .state = env->state().vectorexp,
             .reward = 0,
             .done = env->done(),
@@ -102,7 +102,8 @@ namespace MCL::RL::Searchers
             searching = selectByPUCT(searching, agent);
         }
 
-        expand(searching, agent);
+        auto value = expand(searching, agent);
+        backpropagate(searching, value);
     }
 
     std::shared_ptr<AlphaZeroMCTS::Node> AlphaZeroMCTS::selectByPUCT(std::shared_ptr<Node> node, const PVAgent *agent) const
@@ -151,5 +152,60 @@ namespace MCL::RL::Searchers
 
         std::discrete_distribution<size_t> dist(probsWithTemperature.begin(), probsWithTemperature.end());
         return children[dist(rndgen)];
+    }
+
+    math::Real AlphaZeroMCTS::expand(std::shared_ptr<Node> node, const PVAgent *agent) const
+    {
+        if (node->value().done)
+        {
+            return node->value().reward;
+        }
+
+        auto env = node->value().env.get();
+        auto actions = env->getPossibleActions();
+        auto [policy, value] = agent->policyvalue(env->state());
+        size_t i, noActions = actions.size();
+
+        node->value().noActions = noActions;
+        std::vector<math::Real> P(noActions);
+        std::vector<std::shared_ptr<Node>> children(noActions);
+        DiscreteEnv::StepReturn stepret;
+        DiscreteEnv *childenv;
+
+        for (i = 0; i < noActions; ++i)
+        {
+            P[i] = setting.policyInterpreter(policy, actions[i]);
+            childenv = Environments::cast<DiscreteEnv>(env->copy().release());
+            stepret = childenv->step(actions[i]);
+            children[i] = node->newchild();
+            children[i]->value().env = std::unique_ptr<DiscreteEnv>(childenv);
+            children[i]->value().action = actions[i];
+            children[i]->value().state = stepret.nextStateVector;
+            children[i]->value().reward = stepret.reward;
+            children[i]->value().done = stepret.done;
+        }
+
+        node->value().P = P;
+
+        return value;
+    }
+
+    void AlphaZeroMCTS::backpropagate(std::shared_ptr<Node> node, math::Real value) const
+    {
+        if (node->value().done)
+        {
+            ++node->value().N;
+        }
+
+        std::shared_ptr<Node> updating = node;
+        math::Real gammaPoweredByItrnum = 1;
+
+        while (updating->parent() != nullptr)
+        {
+            updating = node->parent();
+            ++updating->value().N;
+            updating->value().W += value * gammaPoweredByItrnum;
+            gammaPoweredByItrnum *= setting.gamma;
+        }
     }
 }

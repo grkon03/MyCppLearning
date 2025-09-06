@@ -6,10 +6,10 @@
 namespace MCL::RL::util
 {
     template <typename ValueType>
-    class Node : public std::enable_shared_from_this<Node>
+    class Node : public std::enable_shared_from_this<Node<ValueType>>
     {
     private:
-        using _Node = Node;
+        using _Node = Node<ValueType>;
 
         ValueType _value;
         std::vector<std::shared_ptr<_Node>> _children;
@@ -22,13 +22,14 @@ namespace MCL::RL::util
         ValueType &value();
         const ValueType &value() const;
 
+        std::shared_ptr<_Node> newchild();
         std::shared_ptr<_Node> child(size_t i);
         std::shared_ptr<_Node> parent();
         const std::vector<std::shared_ptr<_Node>> &children() const;
     };
 
     template <typename ValueType>
-    Node<ValueType>::Node() : _parent(nullptr) {}
+    Node<ValueType>::Node() {}
     template <typename ValueType>
     Node<ValueType>::Node(std::shared_ptr<_Node> _parent)
         : _parent(_parent) {}
@@ -38,6 +39,12 @@ namespace MCL::RL::util
 
     template <typename ValueType>
     const ValueType &Node<ValueType>::value() const { return _value; }
+
+    template <typename ValueType>
+    std::shared_ptr<Node<ValueType>> Node<ValueType>::newchild()
+    {
+        return std::make_shared<_Node>(this->shared_from_this());
+    }
 
     template <typename ValueType>
     std::shared_ptr<Node<ValueType>> Node<ValueType>::child(size_t i)

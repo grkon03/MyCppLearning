@@ -9,6 +9,7 @@ namespace MCL::RL::Agents
 {
     class PVAgent : public PolicyAgent, public ValueAgent
     {
+    public:
         virtual std::pair<math::Rmatrix, math::Real> policyvalue(const State &) const;
 
         virtual AgentType type() const;

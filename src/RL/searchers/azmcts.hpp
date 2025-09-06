@@ -6,6 +6,7 @@
 #include "../util/tree.hpp"
 #include "../interpret/action.hpp"
 #include <functional>
+#include <random>
 
 namespace MCL::RL::Searchers
 {
@@ -25,7 +26,7 @@ namespace MCL::RL::Searchers
         using DiscreteEnv = Environments::DiscreteActionEnvironment;
         using PVAgent = Agents::PVAgent;
 
-        using SearchNode = struct
+        struct SearchNode
         {
             // environment
             std::unique_ptr<DiscreteEnv> env;
@@ -36,11 +37,11 @@ namespace MCL::RL::Searchers
             // reward which agents can get when they visit this node(this state)
             math::Real reward;
             // done by stepping action above
-            bool done;
+            bool done = false;
             // average or max of reward
-            math::Real W;
+            math::Real W = 0;
             // times selected
-            size_t N;
+            size_t N = 0;
             // prior policy
             std::vector<math::Real> P;
             // the number of actions
@@ -50,7 +51,7 @@ namespace MCL::RL::Searchers
         using Tree = util::Tree<SearchNode>;
         using Node = Tree::Node;
 
-        using Setting = struct
+        struct Setting
         {
             math::Real constantPUCT;
             size_t noSimulations;
@@ -87,7 +88,7 @@ namespace MCL::RL::Searchers
              * @brief if tau (temperature) is below this value, then tau will be reinterpret as 0
              *
              */
-            size_t tauCutThreshold = 0.0001;
+            math::Real tauCutThreshold = 0.0001;
 
             std::function<math::Real(math::Rmatrix, DiscreteAction)> policyInterpreter =
                 interpret::action::probabilityOfActionWithPolicy;
@@ -128,14 +129,14 @@ namespace MCL::RL::Searchers
          */
         virtual std::shared_ptr<Node> selectByVisitCount(std::shared_ptr<Node> node, const PVAgent *agent, math::Real tau) const;
         /**
-         * @brief expand the node and backpropagate
+         * @brief expand the node and return the value of state
          *
          */
-        virtual void expand(std::shared_ptr<Node> node, const PVAgent *agent) const;
+        virtual math::Real expand(std::shared_ptr<Node> node, const PVAgent *agent) const;
         /**
          * @brief backpropagate from the node
          *
          */
-        virtual void backpropagate(std::shared_ptr<Node> node, const PVAgent *agent) const;
+        virtual void backpropagate(std::shared_ptr<Node> node, math::Real value) const;
     };
 }

@@ -98,7 +98,8 @@ namespace MCL::RL::util
         std::vector<std::vector<T>> ret(noBatches);
         std::vector<T> batch(batchsize);
 
-        size_t start, i = 0, j, currentbatchsize;
+        size_t start, j, currentbatchsize;
+        i = 0;
         for (start = 0; start < size; start += batchsize)
         {
             currentbatchsize = std::min(batchsize, size - start);

@@ -22,6 +22,8 @@ namespace MCL::RL
     class Environment
     {
     public:
+        virtual ~Environment() = default;
+
         struct StepReturn
         {
             math::Rmatrix stateVector;

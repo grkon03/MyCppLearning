@@ -2,7 +2,7 @@
 
 namespace MCL::RL::Agents
 {
-    std::pair<math::Rmatrix, math::Real> PVAgent::policyvalue(const State *state) const
+    std::pair<math::Rmatrix, math::Real> PVAgent::policyvalue(const State &state) const
     {
         return {policy(state), value(state)};
     }
