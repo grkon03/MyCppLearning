@@ -46,6 +46,10 @@ namespace MCL::math
 
         static matrix<T> connectHorizontal(std::vector<const matrix<T> *>);
         static matrix<T> connectHorizontal(std::vector<const matrix<T> *>, size_t);
+        static matrix<T> connectVertical(std::vector<const matrix<T> *>);
+        static matrix<T> connectVertical(std::vector<const matrix<T> *>, size_t);
+        static matrix<T> connectVertical(const std::vector<matrix<T>> &);
+        static matrix<T> connectVertical(const std::vector<matrix<T>> &, size_t);
 
         // basic methods
 
@@ -108,6 +112,8 @@ namespace MCL::math
         matrix<T> connectToBottom(const matrix<T> &) const;
         matrix<T> connectToLeft(const matrix<T> &) const;
         matrix<T> connectToRight(const matrix<T> &) const;
+
+        std::vector<matrix<T>> splitRows(const std::vector<size_t> &rowSizes) const;
 
         // comparations
 
@@ -285,6 +291,76 @@ namespace MCL::math
                     ret.elements[index] = matrices[j]->at(i, k);
                     ++index;
                 }
+            }
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectVertical(std::vector<const matrix<T> *> matrices)
+    {
+        return connectVertical(matrices, matrices.size());
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectVertical(std::vector<const matrix<T> *> matrices, size_t size)
+    {
+        assert(size > 0);
+
+        size_t R = matrices[0]->noRows(), C, i, indexRet, indexEach;
+        C = matrices[0]->noColumns();
+        for (i = 1; i < size; ++i)
+        {
+            assert(C == matrices[i]->noColumns());
+            R += matrices[i]->noRows();
+        }
+
+        matrix<T> ret(R, C);
+
+        indexRet = 0;
+
+        for (i = 0; i < size; ++i)
+        {
+            for (indexEach = 0; indexEach < matrices[i]->noRows(); ++indexEach)
+            {
+                ret.direct(indexRet) = matrices[i]->elements[indexEach];
+                ++indexRet;
+            }
+        }
+
+        return ret;
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectVertical(const std::vector<matrix<T>> &matrices)
+    {
+        return connectVertical(matrices, matrices.size());
+    }
+
+    template <arith T>
+    matrix<T> matrix<T>::connectVertical(const std::vector<matrix<T>> &matrices, size_t size)
+    {
+        assert(size > 0);
+
+        size_t R = matrices[0].noRows(), C, i, indexRet, indexEach;
+        C = matrices[0].noColumns();
+        for (i = 1; i < size; ++i)
+        {
+            assert(C == matrices[i].noColumns());
+            R += matrices[i].noRows();
+        }
+
+        matrix<T> ret(R, C);
+
+        indexRet = 0;
+
+        for (i = 0; i < size; ++i)
+        {
+            for (indexEach = 0; indexEach < matrices[i].noRows(); ++indexEach)
+            {
+                ret.direct(indexRet) = matrices[i].elements[indexEach];
+                ++indexRet;
             }
         }
 
@@ -797,6 +873,35 @@ namespace MCL::math
     matrix<T> matrix<T>::connectToRight(const matrix<T> &mat) const
     {
         return mat.connectToLeft(*this);
+    }
+
+    template <arith T>
+    std::vector<matrix<T>> matrix<T>::splitRows(const std::vector<size_t> &rowSizes) const
+    {
+        size_t sizesum = 0;
+        for (auto size : rowSizes)
+        {
+            sizesum += size;
+        }
+
+        assert(sizesum <= R);
+
+        size_t indexOrigin = 0, indexEach;
+
+        std::vector<matrix<T>> ret(rowSizes.size());
+
+        for (i = 0; i < rowSizes.size(); ++i)
+        {
+            ret[i] = matrix<T>(rowSizes[i], C);
+
+            for (indexEach = 0; indexEach <= ret[i].RC; ++indexEach)
+            {
+                ret[i].elements[indexEach] = this->elements[indexOrigin];
+                ++indexOrigin;
+            }
+        }
+
+        return ret;
     }
 
     template <arith T>

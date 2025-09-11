@@ -23,10 +23,7 @@ namespace MCL::RL
     class Agent
     {
     public:
-        virtual Action getAction() const = 0;
         virtual math::Real update(const std::vector<Transition> &) = 0;
-
-        virtual bool searchMode() = 0;
 
         virtual AgentType type() const;
     };

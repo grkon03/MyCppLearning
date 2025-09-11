@@ -34,7 +34,7 @@ namespace MCL::RL
         virtual StepReturn step(Action) = 0;
         virtual std::unique_ptr<Environment> copy() const = 0;
         virtual State state() const = 0;
-        virtual State reset() const = 0;
+        virtual State reset() = 0;
         virtual bool done() const = 0;
 
         virtual EnvironmentType type() const;

@@ -7,3 +7,4 @@
 #include "lastlayer.hpp"
 #include "softmax.hpp"
 #include "mse.hpp"
+#include "split.hpp"

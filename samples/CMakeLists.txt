@@ -5,3 +5,4 @@ set(CMAKE_CXX_STANDARD 23)
 project(MCLsamples)
 
 add_subdirectory(mnist)
+add_subdirectory(Row4)
