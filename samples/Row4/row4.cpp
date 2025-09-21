@@ -151,6 +151,9 @@ namespace MCLSamples::Row4
         vecstate.direct(128) = colorbb(color);
     }
 
+    int Row4Env::getBallcount() const { return ballcount; }
+    Color Row4Env::getSquare(int x, int y, int z) const { return squares[index(x, y, z)]; }
+
     Row4Env::StepReturn Row4Env::step(int x, int y)
     {
         assert(!done());
@@ -225,7 +228,30 @@ namespace MCLSamples::Row4
         return ret;
     }
 
-    Row4Agent::Row4Agent()
+    std::ostream &operator<<(std::ostream &os, const Row4Env &env)
+    {
+        int x, y, z;
+        for (z = 3; z >= 0; --z)
+        {
+            os << "[z = " << z << "]" << std::endl;
+            for (y = 3; y >= 0; --y)
+            {
+                os << "-+---+---+---+---+" << std::endl;
+                os << y << "|";
+                for (x = 0; x < 4; ++x)
+                {
+                    os << " " << env.getSquare(x, y, z) << " |";
+                }
+                os << std::endl;
+            }
+            os << "-+---+---+---+---+" << std::endl;
+            os << " | 0 | 1 | 2 | 3 |" << std::endl;
+        }
+
+        return os;
+    }
+
+    Row4Agent::Row4Agent() : lengine(0.01)
     {
         using WIT = NN::Layers::AffineLayer::WeightInitType;
         using BIT = NN::Layers::AffineLayer::BiasInitType;
@@ -233,6 +259,56 @@ namespace MCLSamples::Row4
         pvnn.addLayer(new NN::Layers::ReLULayer(100));
         pvnn.addLayer(new NN::Layers::AffineLayer(100, 50, WIT::He, BIT::SmallPositive));
         pvnn.addLayer(new NN::Layers::ReLULayer(50));
-        pvnn.addLayer(new NN::Layers::AffineLayer(50, 17, WIT::He, BIT::SmallPositive));
+        auto split = new NN::Layers::SplitLayer(2);
+        split->addLayer(0, new NN::Layers::AffineLayer(50, 16, WIT::He, BIT::SmallPositive));
+        split->addLayer(1, new NN::Layers::AffineLayer(50, 1, WIT::He, BIT::SmallPositive));
+        pvnn.addLayer(split);
+        auto splitlast = new NN::Layers::SplitLastLayer(2);
+        splitlast->addLastLayer(0, 1, new NN::Layers::SoftmaxLastLayer(16));
+        splitlast->addLastLayer(1, 1, new NN::Layers::MSELastLayer(1));
+        pvnn.setLastLayer(splitlast);
+    }
+
+    math::Real Row4Agent::update(const std::vector<RL::Transition> &transitions)
+    {
+        size_t size = transitions.size();
+        std::vector<const math::Rmatrix *> states(size), polandval(size);
+        size_t i;
+        for (i = 0; i < size; ++i)
+        {
+            states[i] = &transitions[i].stateVector;
+            polandval[i] = new math::Rmatrix(transitions[i].actionVector.connectToBottom(math::Rmatrix(transitions[i].reward)));
+        }
+
+        math::Rmatrix statescollection = math::Rmatrix::connectHorizontal(states);
+        math::Rmatrix polandvalcollection = math::Rmatrix::connectHorizontal(polandval);
+
+        pvnn.train(&lengine, statescollection, polandvalcollection);
+
+        return pvnn.loss();
+    }
+
+    math::Rmatrix Row4Agent::policy(const RL::State &state) const
+    {
+        return pvnn.predict(state.vectorexp).splitRows({16})[0];
+    }
+    math::Real Row4Agent::value(const RL::State &state) const
+    {
+        return pvnn.predict(state.vectorexp).direct(16);
+    }
+    std::pair<math::Rmatrix, math::Real> Row4Agent::policyvalue(const RL::State &state) const
+    {
+        auto pv = pvnn.predict(state.vectorexp);
+        return {pv.splitRows({16})[0], pv.direct(16)};
+    }
+
+    int Row4Agent::getBestAction(const Row4Env *env, const RL::Searchers::AlphaZeroMCTS *mcts) const
+    {
+        auto tree = mcts->initialtree(env, this);
+        mcts->search(tree.root(), this);
+
+        auto bestnode = mcts->selectByVisitCount(tree.root(), this, 0);
+
+        return *bestnode->value().action.hotbits.begin();
     }
 }

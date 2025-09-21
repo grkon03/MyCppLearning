@@ -93,7 +93,7 @@ int main()
     nn.addLayer(new NN::Layers::AffineLayer(100, 50, WIT::He, BIT::SmallPositive));
     nn.addLayer(new NN::Layers::ReLULayer(50));
     nn.addLayer(new NN::Layers::AffineLayer(50, 10, WIT::He, BIT::Zero));
-    nn.setLastLayer(new NN::SoftmaxLastLayer(10));
+    nn.setLastLayer(new NN::Layers::SoftmaxLastLayer(10));
 
     // load data
 

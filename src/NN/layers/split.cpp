@@ -6,8 +6,8 @@ namespace MCL::NN::Layers
     // SplitLayer
     //
 
-    SplitLayer::SplitLayer() : lines(), noLines(0), inputsize(0), outputsize(0), eachOutputsizes() {}
-
+    SplitLayer::SplitLayer() : SplitLayer(0) {}
+    SplitLayer::SplitLayer(size_t noLines) { reset(noLines); }
     SplitLayer::SplitLayer(const SplitLayer &s)
         : lines(s.noLines), noLines(s.noLines), inputsize(s.inputsize), outputsize(s.outputsize), eachOutputsizes(s.eachOutputsizes)
     {
@@ -97,13 +97,29 @@ namespace MCL::NN::Layers
 
     void SplitLayer::reset(size_t _noLines)
     {
-        lines = std::vector<ConnectedLayers>(_noLines);
         noLines = _noLines;
+        inputsize = 0;
+        outputsize = 0;
+        lines = std::vector<ConnectedLayers>(_noLines);
+        eachOutputsizes = std::vector<size_t>(_noLines);
     }
 
     void SplitLayer::addLayer(size_t linenumber, const Layer *layer)
     {
         lines[linenumber].addLayer(layer);
+
+        if (inputsize == 0)
+            inputsize = layer->inputSize();
+        else
+            assert(inputsize == layer->inputSize());
+
+        size_t i;
+        outputsize = 0;
+        for (i = 0; i < noLines; ++i)
+        {
+            outputsize += lines[i].outputSize();
+            eachOutputsizes[i] = lines[i].outputSize();
+        }
     }
 
     //
@@ -111,9 +127,7 @@ namespace MCL::NN::Layers
     //
 
     SplitLastLayer::SplitLastLayer() : SplitLastLayer(0) {}
-    SplitLastLayer::SplitLastLayer(size_t noSplits)
-        : inputsize(0), outputsize(0), noSplits(noSplits), lastlayers(noSplits), lossWeights(noSplits),
-          eachInputsizes(noSplits), eachOutputsizes(noSplits) {}
+    SplitLastLayer::SplitLastLayer(size_t noSplits) { reset(noSplits); }
     SplitLastLayer::SplitLastLayer(const SplitLastLayer &sll)
         : inputsize(sll.inputsize), outputsize(sll.outputsize), eachInputsizes(sll.eachInputsizes), eachOutputsizes(sll.eachOutputsizes),
           noSplits(sll.noSplits), lastlayers(sll.noSplits), lossWeights(sll.lossWeights)
@@ -150,13 +164,14 @@ namespace MCL::NN::Layers
 
     math::Rmatrix SplitLastLayer::backwardByComparing(const math::Rmatrix &compared)
     {
+        assert(compared.noRows() == outputsize);
         auto splited = compared.splitRows(eachOutputsizes);
         std::vector<math::Rmatrix> grads(noSplits);
 
         size_t i;
         for (i = 0; i < noSplits; ++i)
         {
-            grads[i] = lastlayers[i]->backwardByComparing(splited[i]);
+            grads[i] = lastlayers[i]->backwardByComparing(lossWeights[i] * splited[i]);
         }
 
         return math::Rmatrix::connectVertical(grads);
@@ -175,7 +190,13 @@ namespace MCL::NN::Layers
 
     void SplitLastLayer::reset(size_t _noSplits)
     {
-        *this = SplitLastLayer(_noSplits);
+        noSplits = _noSplits;
+        inputsize = 0;
+        outputsize = 0;
+        eachInputsizes = std::vector<size_t>(noSplits, 0);
+        eachOutputsizes = std::vector<size_t>(noSplits, 0);
+        lastlayers = std::move(std::vector<std::unique_ptr<LastLayer>>(noSplits));
+        lossWeights = std::vector<math::Real>(noSplits, 0);
     }
 
     void SplitLastLayer::addLastLayer(size_t index, math::Real lossWeight, const LastLayer *ll)
@@ -184,5 +205,14 @@ namespace MCL::NN::Layers
         lossWeights[index] = lossWeight;
         eachInputsizes[index] = ll->inputSize();
         eachOutputsizes[index] = ll->outputSize();
+
+        size_t i;
+        inputsize = 0;
+        outputsize = 0;
+        for (i = 0; i < noSplits; ++i)
+        {
+            inputsize += eachInputsizes[i];
+            outputsize += eachOutputsizes[i];
+        }
     }
 }

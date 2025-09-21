@@ -35,6 +35,7 @@ namespace MCL::NN
         void learn(LearningEngine *engine, const math::Rmatrix &firstinput, const math::Rmatrix &compare);
         math::Real loss() const;
 
+        void train(LearningEngine *engine, const math::Rmatrix &input, const math::Rmatrix &compare);
         void train(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size);
         void trainMinibatch(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size,
                             size_t batchsize, size_t epochsToTrain);

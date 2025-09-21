@@ -46,6 +46,10 @@ namespace MCL::RL::Searchers
             std::vector<math::Real> P;
             // the number of actions
             size_t noActions;
+            // visited
+            bool visited = false;
+            // expanded
+            bool expanded = false;
         };
 
         using Tree = util::Tree<SearchNode>;

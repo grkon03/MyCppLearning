@@ -15,6 +15,8 @@ namespace MCL::NN
     void ConnectedLayers::addLayer(const Layer *layer)
     {
         line.push_back(std::unique_ptr<Layer>(layer->copy().release()));
+        inputsize = line[0]->inputSize();
+        outputsize = line[line.size() - 1]->outputSize();
     }
 
     Layer *ConnectedLayers::operator[](size_t i) { return line[i].get(); }

@@ -26,6 +26,8 @@ namespace MCL::RL::util
         std::shared_ptr<_Node> child(size_t i);
         std::shared_ptr<_Node> parent();
         const std::vector<std::shared_ptr<_Node>> &children() const;
+
+        void setChildren(const std::vector<std::shared_ptr<_Node>> &__children);
     };
 
     template <typename ValueType>
@@ -62,6 +64,12 @@ namespace MCL::RL::util
     const std::vector<std::shared_ptr<Node<ValueType>>> &Node<ValueType>::children() const
     {
         return _children;
+    }
+
+    template <typename ValueType>
+    void Node<ValueType>::setChildren(const std::vector<std::shared_ptr<_Node>> &__children)
+    {
+        _children = __children;
     }
 
     template <typename ValueType>

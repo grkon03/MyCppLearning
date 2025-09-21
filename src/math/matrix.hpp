@@ -886,7 +886,7 @@ namespace MCL::math
 
         assert(sizesum <= R);
 
-        size_t indexOrigin = 0, indexEach;
+        size_t i, indexOrigin = 0, indexEach;
 
         std::vector<matrix<T>> ret(rowSizes.size());
 
@@ -894,7 +894,7 @@ namespace MCL::math
         {
             ret[i] = matrix<T>(rowSizes[i], C);
 
-            for (indexEach = 0; indexEach <= ret[i].RC; ++indexEach)
+            for (indexEach = 0; indexEach < ret[i].RC; ++indexEach)
             {
                 ret[i].elements[indexEach] = this->elements[indexOrigin];
                 ++indexOrigin;

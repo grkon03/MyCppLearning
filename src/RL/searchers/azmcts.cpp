@@ -58,29 +58,39 @@ namespace MCL::RL::Searchers
 
         // make the prior distribution of the root node
 
-        auto possibleActions = env->getPossibleActions();
-        size_t i, noActions = possibleActions.size();
+        auto actions = env->getPossibleActions();
+        size_t i, noActions = actions.size();
         auto policy = agent->policy(env->state());
         auto dirichlet = util::uniformDirichletSample(setting.dirichletAlpha, noActions, rndgen);
-        math::Real priorsum = 0, probact;
-        std::vector<math::Real> prior;
-
-        prior = std::vector<math::Real>(noActions);
+        math::Real Psum = 0, probact;
+        std::vector<math::Real> P(noActions);
+        std::vector<std::shared_ptr<Node>> children(noActions);
+        DiscreteEnv::StepReturn stepret;
+        DiscreteEnv *childenv;
 
         for (i = 0; i < noActions; ++i)
         {
-            probact = setting.policyInterpreter(policy, possibleActions[i]);
-            prior[i] = (1 - setting.dirichletEpsilon) * probact + setting.dirichletEpsilon * dirichlet[i];
-            priorsum += prior[i];
+            probact = setting.policyInterpreter(policy, actions[i]);
+            P[i] = (1 - setting.dirichletEpsilon) * probact + setting.dirichletEpsilon * dirichlet[i];
+            Psum += P[i];
+            childenv = Environments::cast<DiscreteEnv>(env->copy().release());
+            stepret = childenv->step(actions[i]);
+            children[i] = tree.root()->newchild();
+            children[i]->value().env = std::unique_ptr<DiscreteEnv>(childenv);
+            children[i]->value().action = actions[i];
+            children[i]->value().state = stepret.nextStateVector;
+            children[i]->value().reward = stepret.reward;
+            children[i]->value().done = stepret.done;
         }
 
         for (i = 0; i < noActions; ++i)
         {
-            prior[i] /= priorsum;
+            P[i] /= Psum;
         }
 
-        tree.root()->value().P = prior;
+        tree.root()->value().P = P;
         tree.root()->value().noActions = noActions;
+        tree.root()->setChildren(children);
 
         return tree;
     }
@@ -97,12 +107,14 @@ namespace MCL::RL::Searchers
     void AlphaZeroMCTS::simulate(std::shared_ptr<Node> node, const PVAgent *agent) const
     {
         auto searching = node;
-        while (searching->value().N != 0)
+        while (searching->value().visited && !(searching->value().done))
         {
             searching = selectByPUCT(searching, agent);
         }
 
-        auto value = expand(searching, agent);
+        searching->value().visited = true;
+        math::Real value = expand(searching, agent);
+
         backpropagate(searching, value);
     }
 
@@ -113,12 +125,14 @@ namespace MCL::RL::Searchers
         math::Real Q;
         auto children = node->children();
 
+        std::shuffle(children.begin(), children.end(), rndgen);
+
         size_t i = 0;
         for (i = 0; i < value.noActions; ++i)
         {
             const SearchNode &childvalue = children[i]->value();
             Q = childvalue.N == 0 ? 0 : childvalue.W / childvalue.N;
-            U[i] = Q + setting.constantPUCT * value.P[i] * std::sqrt(childvalue.N) / value.N;
+            U[i] = Q + setting.constantPUCT * value.P[i] * std::sqrt(value.N) / (childvalue.N + 1);
         }
 
         auto itrArgmax = std::max_element(U.begin(), U.end());
@@ -168,24 +182,34 @@ namespace MCL::RL::Searchers
 
         node->value().noActions = noActions;
         std::vector<math::Real> P(noActions);
+        math::Real Psum = 0;
         std::vector<std::shared_ptr<Node>> children(noActions);
         DiscreteEnv::StepReturn stepret;
         DiscreteEnv *childenv;
 
         for (i = 0; i < noActions; ++i)
         {
-            P[i] = setting.policyInterpreter(policy, actions[i]);
+            Psum += (P[i] = setting.policyInterpreter(policy, actions[i]));
             childenv = Environments::cast<DiscreteEnv>(env->copy().release());
             stepret = childenv->step(actions[i]);
             children[i] = node->newchild();
-            children[i]->value().env = std::unique_ptr<DiscreteEnv>(childenv);
-            children[i]->value().action = actions[i];
-            children[i]->value().state = stepret.nextStateVector;
-            children[i]->value().reward = stepret.reward;
-            children[i]->value().done = stepret.done;
+            children[i]->value() = SearchNode{
+                .env = std::unique_ptr<DiscreteEnv>(childenv),
+                .action = actions[i],
+                .state = stepret.nextStateVector,
+                .reward = stepret.reward,
+                .done = stepret.done,
+            };
         }
 
+        for (i = 0; i < noActions; ++i)
+        {
+            P[i] /= Psum;
+        }
+
+        node->value().noActions = noActions;
         node->value().P = P;
+        node->setChildren(children);
 
         return value;
     }
@@ -202,8 +226,8 @@ namespace MCL::RL::Searchers
 
         while (updating->parent() != nullptr)
         {
-            updating = node->parent();
-            ++updating->value().N;
+            updating = updating->parent();
+            ++(updating->value().N);
             updating->value().W += value * gammaPoweredByItrnum;
             gammaPoweredByItrnum *= setting.gamma;
         }

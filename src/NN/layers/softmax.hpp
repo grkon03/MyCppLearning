@@ -2,7 +2,7 @@
 
 #include "lastlayer.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     /**
      * @brief softmax with the cross entropy loss

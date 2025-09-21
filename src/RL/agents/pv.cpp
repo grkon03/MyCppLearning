@@ -13,13 +13,13 @@ namespace MCL::RL::Agents
     PVAgent *cast<PVAgent>(Agent *a)
     {
         assert(hasType(a->type(), AgentType::Policy | AgentType::Value));
-        return static_cast<PVAgent *>(static_cast<ValueAgent *>(a));
+        return static_cast<PVAgent *>(a);
     }
 
     template <>
     const PVAgent *cast<PVAgent>(const Agent *a)
     {
         assert(hasType(a->type(), AgentType::Policy | AgentType::Value));
-        return static_cast<const PVAgent *>(static_cast<const ValueAgent *>(a));
+        return static_cast<const PVAgent *>(a);
     }
 }

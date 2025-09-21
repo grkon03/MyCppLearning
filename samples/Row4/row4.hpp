@@ -14,6 +14,25 @@ namespace MCLSamples::Row4
         Black,
     };
 
+    inline std::ostream &operator<<(std::ostream &os, Color color)
+    {
+        switch (color)
+        {
+        case Color::White:
+            os << "W";
+            break;
+        case Color::Black:
+            os << "B";
+            break;
+        case Color::Empty:
+            os << " ";
+            break;
+        default:
+            assert(false);
+        }
+        return os;
+    }
+
     constexpr Color operator!(Color c)
     {
         switch (c)
@@ -65,6 +84,8 @@ namespace MCLSamples::Row4
 
         void write(int index, Color ballcolor);
         void setSideToMove(Color color);
+        int getBallcount() const;
+        Color getSquare(int x, int y, int z) const;
 
         StepReturn step(int x, int y);
         virtual StepReturn step(RL::Action) override;
@@ -76,10 +97,13 @@ namespace MCLSamples::Row4
         virtual std::vector<RL::DiscreteAction> getPossibleActions() const override;
     };
 
+    std::ostream &operator<<(std::ostream &os, const Row4Env &env);
+
     class Row4Agent : public RL::Agents::PVAgent
     {
     private:
-        NN::NeuralNetwork pvnn;
+        mutable NN::NeuralNetwork pvnn;
+        NN::Engines::GradientDescentEngine lengine;
 
     public:
         Row4Agent();
@@ -88,5 +112,7 @@ namespace MCLSamples::Row4
         math::Rmatrix policy(const RL::State &state) const override;
         math::Real value(const RL::State &state) const override;
         std::pair<math::Rmatrix, math::Real> policyvalue(const RL::State &state) const override;
+
+        int getBestAction(const Row4Env *env, const RL::Searchers::AlphaZeroMCTS *mcts) const;
     };
 }

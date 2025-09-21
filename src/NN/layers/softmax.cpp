@@ -1,6 +1,6 @@
 #include "softmax.hpp"
 
-namespace MCL::NN
+namespace MCL::NN::Layers
 {
     namespace
     {

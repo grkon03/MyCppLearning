@@ -101,6 +101,13 @@ namespace MCL::NN
         learn(engine, compare);
     }
 
+    void NeuralNetwork::train(LearningEngine *engine, const math::Rmatrix &input, const math::Rmatrix &compare)
+    {
+        assert(engine != nullptr);
+        this->predict(input);
+        this->learn(engine, compare);
+    }
+
     void NeuralNetwork::train(LearningEngine *engine, const math::Rmatrix inputs[], const math::Rmatrix compares[], size_t size)
     {
         assert(engine != nullptr);
